@@ -5,7 +5,7 @@ import org.springframework.boot.runApplication
 import io.github.cdimascio.dotenv.Dotenv
 
 @SpringBootApplication
-class AppApplication
+class BackendApplication
 
 fun main(args: Array<String>) {
 	// Load environment variables from .env file
@@ -13,5 +13,5 @@ fun main(args: Array<String>) {
 	dotenv.entries().forEach { entry ->
 		System.setProperty(entry.key, entry.value)
 	}
-	runApplication<AppApplication>(*args)
+	runApplication<BackendApplication>(*args)
 }
