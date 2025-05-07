@@ -1,0 +1,36 @@
+name: "Build workflow"
+
+on:
+  pull_request:
+    types: [ opened, reopened, synchronize ]
+    branches: [ main, dev ]
+
+jobs:
+  build:
+    name: Build project with Gradle
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Create .env file
+        run: echo "${{ secrets.ENV_CONTENT }}" > .env
+
+      - name: Load environment variables
+        run: |
+          set -a
+          source .env
+          set -a
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: '21'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew build
