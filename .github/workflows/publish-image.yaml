@@ -1,0 +1,49 @@
+name: "Publish Docker images workflow"
+
+on:
+  pull_request:
+    types: [ closed ]
+    branches: [ main, dev ]
+
+jobs:
+  push_to_registry:
+    name: Push Docker image to GitHub Packages
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Create Short SHA
+        uses: benjlevesque/short-sha@v1.2
+        id: short-sha
+        with:
+          length: 8
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: plataya
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update version
+        run: ./update_version.sh patch
+
+      - name: Commit and Push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update VERSION file"
+          branch: ${{ github.ref_name }}
+
+      - name: Push to GitHub Packages
+        id: docker_build
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: |
+            ghcr.io/plataya/backend:latest
+            ghcr.io/plataya/backend:$(cat VERSION)
