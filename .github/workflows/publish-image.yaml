@@ -42,6 +42,10 @@ jobs:
           commit_message: "Update VERSION file"
           branch: ${{ github.ref_name }}
 
+      - name: Read VERSION file
+        id: read_version
+        run: echo "VERSION=$(cat VERSION)" >> $GITHUB_ENV
+
       - name: Push to GitHub Packages
         id: docker_build
         uses: docker/build-push-action@v4
@@ -49,4 +53,4 @@ jobs:
           push: true
           tags: |
             ghcr.io/plataya/backend:latest
-            ghcr.io/plataya/backend:$(cat VERSION)
+            ghcr.io/plataya/backend:${{ env.VERSION }}
