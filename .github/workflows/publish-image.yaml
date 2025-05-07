@@ -30,6 +30,9 @@ jobs:
           username: plataya
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Grant execute permission for update_version.sh
+        run: chmod +x ./update_version.sh
+
       - name: Update version
         run: ./update_version.sh patch
 
