@@ -3,7 +3,7 @@ name: "Create Git Tag with Semantic Versioning"
 on:
   pull_request:
     types: [ closed ]
-    branches: [ main, dev ]
+    branches: [ main ]
 
 jobs:
   create_tag:
