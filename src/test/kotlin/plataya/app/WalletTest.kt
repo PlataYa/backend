@@ -22,6 +22,6 @@ class WalletTest {
     fun test_2() {
         val service = WalletService()
 
-        val createdWallet = service.createWallet
+        // val createdWallet = service.createWallet(WalletDTO("mail@mail.com", 123456789, 1863.4F))
     }
 }
