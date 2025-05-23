@@ -3,7 +3,7 @@ name: "Create Git Tag with Semantic Versioning"
 on:
   pull_request:
     types: [ closed ]
-    branches: [ main ]
+    branches: [ main, dev ]
 
 jobs:
   create_tag:
@@ -27,16 +27,24 @@ jobs:
       - name: Determine version bump type
         id: version_type
         run: |
-          # Get PR labels
+          # Get PR labels and title
           PR_LABELS='${{ toJson(github.event.pull_request.labels.*.name) }}'
+          PR_TITLE='${{ github.event.pull_request.title }}'
           echo "PR Labels: $PR_LABELS"
+          echo "PR Title: $PR_TITLE"
           
-          # Default to patch if no specific label is found
+          # Default to patch if no specific label or title keyword is found
           VERSION_TYPE="patch"
           
-          # Check for version labels (priority: major > minor > patch)
-          # Using -i flag for case-insensitive matching
-          if echo "$PR_LABELS" | grep -qi "major\|breaking"; then
+          # Check PR title first (case-insensitive)
+          if echo "$PR_TITLE" | grep -qi "^major\|^breaking\|\[major\]\|\[breaking\]"; then
+            VERSION_TYPE="major"
+          elif echo "$PR_TITLE" | grep -qi "^minor\|^feature\|^enhancement\|\[minor\]\|\[feature\]\|\[enhancement\]"; then
+            VERSION_TYPE="minor"
+          elif echo "$PR_TITLE" | grep -qi "^patch\|^bugfix\|^hotfix\|^fix\|\[patch\]\|\[bugfix\]\|\[hotfix\]\|\[fix\]"; then
+            VERSION_TYPE="patch"
+          # If no title keywords found, check labels (priority: major > minor > patch)
+          elif echo "$PR_LABELS" | grep -qi "major\|breaking"; then
             VERSION_TYPE="major"
           elif echo "$PR_LABELS" | grep -qi "minor\|feature\|enhancement"; then
             VERSION_TYPE="minor"
