@@ -5,7 +5,7 @@ VERSION_FILE="VERSION"
 
 # Check if the version file exists
 if [ ! -f "$VERSION_FILE" ]; then
-  echo "0.1.0" > "$VERSION_FILE"
+  echo "0.0.0" > "$VERSION_FILE"
 fi
 
 # Read the current version
