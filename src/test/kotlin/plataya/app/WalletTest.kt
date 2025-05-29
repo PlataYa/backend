@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import plataya.app.dto.WalletDTO
-import plataya.app.service.WalletService
+import plataya.app.factory.WalletFactory
 
 class WalletTest {
     @Test
@@ -20,9 +20,9 @@ class WalletTest {
     @Test
     @DisplayName("Wallet service should create a wallet with default values correctly")
     fun test_2() {
-        val service = WalletService()
+        val factory = WalletFactory()
 
-        val createdWallet = service.createWallet("mail@mail.com")
+        val createdWallet = factory.createWallet("mail@mail.com")
 
         assertEquals(createdWallet.cvu, 100000000001)
         assertEquals(createdWallet.balance, 0F)
@@ -31,11 +31,11 @@ class WalletTest {
     @Test
     @DisplayName("Wallet service should create various wallets correctly")
     fun test_3() {
-        val service = WalletService()
+        val factory = WalletFactory()
 
-        service.createWallet("mail@mail.com")
-        service.createWallet("mail@mail.com")
-        val createdWallet = service.createWallet("mail@mail.com")
+        factory.createWallet("mail@mail.com")
+        factory.createWallet("mail@mail.com")
+        val createdWallet = factory.createWallet("mail@mail.com")
 
         assertEquals(createdWallet.cvu, 100000000003)
         assertEquals(createdWallet.balance, 0F)
