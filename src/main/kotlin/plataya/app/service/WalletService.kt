@@ -1,7 +1,9 @@
 package plataya.app.service
 
+import org.springframework.stereotype.Service
 import plataya.app.dto.WalletDTO
 
+@Service
 class WalletService {
     private var walletCount = PlataYaCVUCounter()
 
