@@ -2,8 +2,8 @@ package plataya.app.service
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import plataya.app.dto.*
-import plataya.app.entity.*
+import plataya.app.model.dto.*
+import plataya.app.model.entity.*
 import plataya.app.exception.InsufficientFundsException
 import plataya.app.exception.InvalidTransactionException
 import plataya.app.exception.TransactionNotFoundException
