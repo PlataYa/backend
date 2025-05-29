@@ -13,6 +13,7 @@ data class Wallet(
     val cvu: Long,
 
     @OneToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     val user: User,
 
     val balance: Float

@@ -5,7 +5,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.repository.query.FluentQuery
-import plataya.app.entity.Wallet
+import plataya.app.model.entities.Wallet
 import plataya.app.repository.WalletRepository
 import java.util.Optional
 import java.util.function.Function
@@ -143,6 +143,10 @@ class MockWalletRepository: WalletRepository {
 
     override fun deleteAll() {
         TODO("Not yet implemented")
+    }
+
+    override fun existsByCvu(cvu: Long): Boolean {
+        return wallets.any { it.cvu == cvu }
     }
 }
 

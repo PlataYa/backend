@@ -1,9 +1,10 @@
 package plataya.app.factory
 
-import plataya.app.dto.WalletDTO
-import plataya.app.entity.Wallet
+import plataya.app.model.dtos.WalletDTO
+import plataya.app.model.entities.User
+import plataya.app.model.entities.Wallet
 
 interface WalletFactoryI {
-    fun createWalletDTO(mail: String): WalletDTO
-    fun createWalletEntity(wallet: WalletDTO): Wallet
+    fun translateWalletEntityToDTO(wallet: Wallet): WalletDTO
+    fun createWalletEntity(user: User): Wallet
 }

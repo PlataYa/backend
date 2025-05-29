@@ -16,7 +16,8 @@ import jakarta.persistence.EntityNotFoundException
 class UserService(
     private val userRepository: UserRepository,  
     private val passwordEncoder: PasswordEncoder, 
-    private val tokenProvider: TokenProvider
+    private val tokenProvider: TokenProvider,
+    private val walletService: WalletService
 ): UserDetailsService {
     
     override fun loadUserByUsername(email: String?): UserDetails {
@@ -51,7 +52,10 @@ class UserService(
         val userDTO = translateUserToUserDtoResponse(savedUser)
         val token = tokenProvider.generateToken(savedUser.id.toString(), savedUser.mail, savedUser.name, savedUser.lastname)
         userDTO.token = token
-        
+
+//        Wallet creation here
+        val wallet = walletService.createWallet(savedUser)
+
         return userDTO
     }
 

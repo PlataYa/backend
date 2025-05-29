@@ -3,17 +3,26 @@ package plataya.app.wallet
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import plataya.app.dto.WalletDTO
 import plataya.app.factory.WalletFactory
+import plataya.app.model.dtos.WalletDTO
+import plataya.app.model.entities.User
 import plataya.app.service.WalletService
 
 class WalletTest {
+    val mockUser = User(
+        mail = "mail@mail.com",
+        name = "Test",
+        lastname = "User",
+        password = "password",
+        dayOfBirth = "2000-01-01",
+    )
+
     @Test
     @DisplayName("Wallet should be created correctly")
     fun test_1() {
         val walletMock = WalletDTO("mail@mail.com", 123456789, 1863.4F)
 
-        Assertions.assertEquals("mail@mail.com", walletMock.mail)
+        Assertions.assertEquals("mail@mail.com", walletMock.userMail)
         Assertions.assertEquals(123456789, walletMock.cvu)
         Assertions.assertEquals(1863.4F, walletMock.balance)
     }
@@ -23,7 +32,7 @@ class WalletTest {
     fun test_2() {
         val factory = WalletFactory()
 
-        val createdWallet = factory.createWalletDTO("mail@mail.com")
+        val createdWallet = factory.createWalletEntity(mockUser)
 
         Assertions.assertEquals(createdWallet.cvu, 100000000001)
         Assertions.assertEquals(createdWallet.balance, 0F)
@@ -34,9 +43,9 @@ class WalletTest {
     fun test_3() {
         val factory = WalletFactory()
 
-        factory.createWalletDTO("mail@mail.com")
-        factory.createWalletDTO("mail@mail.com")
-        val createdWallet = factory.createWalletDTO("mail@mail.com")
+        factory.createWalletEntity(mockUser)
+        factory.createWalletEntity(mockUser)
+        val createdWallet = factory.createWalletEntity(mockUser)
 
         Assertions.assertEquals(createdWallet.cvu, 100000000003)
         Assertions.assertEquals(createdWallet.balance, 0F)
@@ -50,10 +59,10 @@ class WalletTest {
 
         val service = WalletService(factory, mockRepo)
 
-        service.createWallet("mail@mail.com")
+        service.createWallet(mockUser)
         val allWallets = mockRepo.findAll()
 
         Assertions.assertEquals(1, allWallets.size)
-        Assertions.assertEquals("mail@mail.com", allWallets[0]?.mail)
+        Assertions.assertEquals("mail@mail.com", allWallets[0]?.user?.mail)
     }
 }

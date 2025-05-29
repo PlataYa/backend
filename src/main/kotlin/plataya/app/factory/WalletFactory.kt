@@ -1,21 +1,26 @@
 package plataya.app.factory
 
 import org.springframework.stereotype.Component
-import plataya.app.dto.WalletDTO
-import plataya.app.entity.Wallet
+import plataya.app.model.dtos.WalletDTO
+import plataya.app.model.entities.User
+import plataya.app.model.entities.Wallet
 import plataya.app.service.PlataYaCVUCounter
 
 @Component
 class WalletFactory: WalletFactoryI {
     private val walletCount = PlataYaCVUCounter()
 
-    override fun createWalletDTO(mail: String): WalletDTO {
-        return WalletDTO(mail, walletCount.getNextCVU(), 0F)
+    override fun createWalletEntity(user: User): Wallet {
+        return Wallet(
+            user = user,
+            cvu = walletCount.getNextCVU(),
+            balance = 0.0F
+        )
     }
 
-    override fun createWalletEntity(wallet: WalletDTO): Wallet {
-        return Wallet(
-            mail = wallet.mail,
+    override fun translateWalletEntityToDTO(wallet: Wallet): WalletDTO {
+        return WalletDTO(
+            userMail = wallet.user.mail,
             cvu = wallet.cvu,
             balance = wallet.balance
         )
