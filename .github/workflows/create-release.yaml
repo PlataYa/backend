@@ -1,0 +1,86 @@
+name: "Create Git Tag with Semantic Versioning"
+
+on:
+  pull_request:
+    types: [ closed ]
+    branches: [ main, dev ]
+
+jobs:
+  create_tag:
+    name: Create Git Tag
+    runs-on: ubuntu-latest
+    # Only run if the PR was merged (not just closed)
+    if: github.event.pull_request.merged == true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          # Fetch full history for proper versioning
+          fetch-depth: 0
+          # Use a token with write permissions to create tags
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Grant execute permission for update_version.sh
+        run: chmod +x ./update_version.sh
+
+      - name: Determine version bump type
+        id: version_type
+        run: |
+          # Get PR labels
+          PR_LABELS='${{ toJson(github.event.pull_request.labels.*.name) }}'
+          echo "PR Labels: $PR_LABELS"
+          
+          # Default to patch if no specific label is found
+          VERSION_TYPE="patch"
+          
+          # Check for version labels (priority: major > minor > patch)
+          # Using -i flag for case-insensitive matching
+          if echo "$PR_LABELS" | grep -qi "major\|breaking"; then
+            VERSION_TYPE="major"
+          elif echo "$PR_LABELS" | grep -qi "minor\|feature\|enhancement"; then
+            VERSION_TYPE="minor"
+          elif echo "$PR_LABELS" | grep -qi "patch\|bugfix\|hotfix"; then
+            VERSION_TYPE="patch"
+          fi
+          
+          echo "Version bump type: $VERSION_TYPE"
+          echo "type=$VERSION_TYPE" >> $GITHUB_OUTPUT
+
+      - name: Update version
+        run: ./update_version.sh ${{ steps.version_type.outputs.type }}
+
+      - name: Read VERSION file
+        id: read_version
+        run: |
+          VERSION=$(cat VERSION)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create Git Tag
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a "v${{ env.VERSION }}" -m "Release version ${{ env.VERSION }}"
+          git push origin "v${{ env.VERSION }}"
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "v${{ env.VERSION }}"
+          release_name: "Release v${{ env.VERSION }}"
+          body: |
+            ## Changes in this Release
+            
+            **Version Bump**: ${{ steps.version_type.outputs.type }}
+            
+            This release was automatically created from PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}
+            
+            ### PR Labels Used for Versioning:
+            ${{ join(github.event.pull_request.labels.*.name, ', ') }}
+            
+            **Full Changelog**: https://github.com/${{ github.repository }}/compare/v${{ steps.read_version.outputs.version }}...v${{ env.VERSION }}
+          draft: false
+          prerelease: false
