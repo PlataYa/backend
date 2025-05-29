@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.web.bind.annotation.GetMapping
 import plataya.app.dto.CreateWalletRequest
 import plataya.app.service.WalletService
 
@@ -31,6 +32,16 @@ class WalletController @Autowired constructor(
         return try {
             val wallet = walletService.createWallet(userMail)
             ResponseEntity.ok(wallet)
+        } catch (e: Exception) {
+            ResponseEntity.internalServerError().body(mapOf("error" to e.message))
+        }
+    }
+
+    @GetMapping("/all")
+    fun getAllWallets(): ResponseEntity<Any> {
+        return try {
+            val wallets = walletService.getAllWallets()
+            ResponseEntity.ok(wallets)
         } catch (e: Exception) {
             ResponseEntity.internalServerError().body(mapOf("error" to e.message))
         }

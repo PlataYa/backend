@@ -22,7 +22,7 @@ class WalletTest {
     fun test_2() {
         val factory = WalletFactory()
 
-        val createdWallet = factory.createWallet("mail@mail.com")
+        val createdWallet = factory.createWalletDTO("mail@mail.com")
 
         assertEquals(createdWallet.cvu, 100000000001)
         assertEquals(createdWallet.balance, 0F)
@@ -33,9 +33,9 @@ class WalletTest {
     fun test_3() {
         val factory = WalletFactory()
 
-        factory.createWallet("mail@mail.com")
-        factory.createWallet("mail@mail.com")
-        val createdWallet = factory.createWallet("mail@mail.com")
+        factory.createWalletDTO("mail@mail.com")
+        factory.createWalletDTO("mail@mail.com")
+        val createdWallet = factory.createWalletDTO("mail@mail.com")
 
         assertEquals(createdWallet.cvu, 100000000003)
         assertEquals(createdWallet.balance, 0F)
