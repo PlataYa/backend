@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import plataya.app.dto.WalletDTO
 import plataya.app.factory.WalletFactory
+import plataya.app.service.WalletService
 
 class WalletTest {
     @Test
@@ -45,6 +46,14 @@ class WalletTest {
     @DisplayName("Wallet service should save wallet correctly")
     fun test_4() {
         val factory = WalletFactory()
-        val wallet = factory.createWalletDTO("")
+        val mockRepo = MockWalletRepository()
+
+        val service = WalletService(factory, mockRepo)
+
+        service.createWallet("mail@mail.com")
+        val allWallets = mockRepo.findAll()
+
+        Assertions.assertEquals(1, allWallets.size)
+        Assertions.assertEquals("mail@mail.com", allWallets[0]?.mail)
     }
 }
