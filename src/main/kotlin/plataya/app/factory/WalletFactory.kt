@@ -6,14 +6,14 @@ import plataya.app.entity.Wallet
 import plataya.app.service.PlataYaCVUCounter
 
 @Component
-class WalletFactory {
+class WalletFactory: WalletFactoryI {
     private val walletCount = PlataYaCVUCounter()
 
-    fun createWalletDTO(mail: String): WalletDTO {
+    override fun createWalletDTO(mail: String): WalletDTO {
         return WalletDTO(mail, walletCount.getNextCVU(), 0F)
     }
 
-    fun createWalletEntity(wallet: WalletDTO): Wallet {
+    override fun createWalletEntity(wallet: WalletDTO): Wallet {
         return Wallet(
             mail = wallet.mail,
             cvu = wallet.cvu,
