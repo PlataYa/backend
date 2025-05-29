@@ -16,11 +16,16 @@ class WalletController @Autowired constructor(
 ) {
     @PostMapping("/create")
     fun createWallet(@RequestBody createWalletRequest: CreateWalletRequest): ResponseEntity<Any> {
-//        Should validate that the mail is associated with a registered user and if it follows the correct format
+//        Should validate that the mail is associated with a registered user
         val userMail = createWalletRequest.userMail
 
         if (userMail.isBlank()) {
             return ResponseEntity.badRequest().body(mapOf("error" to "User mail cannot be empty"))
+        }
+
+        val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$".toRegex()
+        if (!emailRegex.matches(userMail)) {
+            return ResponseEntity.badRequest().body(mapOf("error" to "Invalid email format"))
         }
 
         return try {
