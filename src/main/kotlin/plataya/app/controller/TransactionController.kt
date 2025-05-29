@@ -7,10 +7,10 @@ import plataya.app.exception.InsufficientFundsException
 import plataya.app.exception.InvalidTransactionException
 import plataya.app.exception.TransactionNotFoundException
 import plataya.app.exception.WalletNotFoundException
-import plataya.app.model.dto.DepositDTO
-import plataya.app.model.dto.P2PTransferDTO
-import plataya.app.model.dto.TransactionResponse
-import plataya.app.model.dto.WithdrawalDTO
+import plataya.app.model.dtos.DepositDTO
+import plataya.app.model.dtos.P2PTransferDTO
+import plataya.app.model.dtos.TransactionResponse
+import plataya.app.model.dtos.WithdrawalDTO
 import plataya.app.service.TransactionService
 
 @RestController

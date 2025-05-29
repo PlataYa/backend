@@ -3,7 +3,7 @@ package plataya.app
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import plataya.app.model.dto.WalletDTO
+import plataya.app.model.dtos.WalletDTO
 import plataya.app.service.WalletService
 
 class WalletTest {

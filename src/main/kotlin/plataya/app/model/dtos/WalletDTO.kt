@@ -1,4 +1,4 @@
-package plataya.app.model.dto
+package plataya.app.model.dtos
 
 data class WalletDTO(
     val mail: String,
