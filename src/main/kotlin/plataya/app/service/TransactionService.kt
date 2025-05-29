@@ -19,7 +19,7 @@ class TransactionService(
 ) {
 
     @Transactional
-    fun createP2PTransfer(request: P2PTransferRequest): TransactionResponse {
+    fun createP2PTransfer(request: P2PTransferDTO): TransactionResponse {
         if (request.payerCvu == request.payeeCvu) {
             throw InvalidTransactionException("Payer and payee CVU cannot be the same.")
         }
@@ -48,16 +48,17 @@ class TransactionService(
             amount = request.amount,
             currency = request.currency,
             status = TransactionStatus.COMPLETED,
-            description = null,
             createdAt = LocalDateTime.now()
         )
 
         val savedTransaction = transactionRepository.save(transaction)
         return savedTransaction.toResponse()
+
+         */
     }
 
     @Transactional
-    fun createDeposit(request: DepositRequest): TransactionResponse {
+    fun createDeposit(request: DepositDTO): TransactionResponse {
         if (request.amount <= 0.0f) {
             throw InvalidTransactionException("Deposit amount must be positive.")
         }
@@ -82,7 +83,7 @@ class TransactionService(
     }
 
     @Transactional
-    fun createWithdrawal(request: WithdrawalRequest): TransactionResponse {
+    fun createWithdrawal(request: WithdrawalDTO): TransactionResponse {
         if (request.amount <= 0.0f) {
             throw InvalidTransactionException("Withdrawal amount must be positive.")
         }

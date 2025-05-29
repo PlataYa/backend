@@ -6,21 +6,21 @@ import plataya.app.entity.Currency
 import java.time.LocalDateTime
 
 // Request DTOs
-data class P2PTransferRequest(
+data class P2PTransferDTO(
     val payerCvu: Long,
     val payeeCvu: Long,
     val amount: Float,
     val currency: Currency = Currency.ARS
 )
 
-data class DepositRequest(
+data class DepositDTO(
     val payeeCvu: Long,
     val amount: Float,
     val currency: Currency = Currency.ARS,
     val externalReference: String
 )
 
-data class WithdrawalRequest(
+data class WithdrawalDTO(
     val payerCvu: Long,
     val amount: Float,
     val currency: Currency = Currency.ARS,
