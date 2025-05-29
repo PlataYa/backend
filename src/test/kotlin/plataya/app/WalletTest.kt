@@ -18,10 +18,26 @@ class WalletTest {
     }
 
     @Test
-    @DisplayName("Wallet service should create a wallet correctly")
+    @DisplayName("Wallet service should create a wallet with default values correctly")
     fun test_2() {
         val service = WalletService()
 
-        // val createdWallet = service.createWallet(WalletDTO("mail@mail.com", 123456789, 1863.4F))
+        val createdWallet = service.createWallet("mail@mail.com")
+
+        assertEquals(createdWallet.cvu, 100000000001)
+        assertEquals(createdWallet.balance, 0F)
+    }
+
+    @Test
+    @DisplayName("Wallet service should create various wallets correctly")
+    fun test_3() {
+        val service = WalletService()
+
+        service.createWallet("mail@mail.com")
+        service.createWallet("mail@mail.com")
+        val createdWallet = service.createWallet("mail@mail.com")
+
+        assertEquals(createdWallet.cvu, 100000000003)
+        assertEquals(createdWallet.balance, 0F)
     }
 }
