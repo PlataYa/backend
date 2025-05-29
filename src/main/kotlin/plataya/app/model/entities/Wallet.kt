@@ -1,6 +1,7 @@
-package plataya.app.entity
+package plataya.app.model.entities
 
 import jakarta.persistence.*
+import plataya.app.model.entities.User
 
 @Entity
 data class Wallet(
