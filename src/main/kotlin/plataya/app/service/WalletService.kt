@@ -43,4 +43,23 @@ class WalletService(
         }
         return walletFactory.translateWalletEntityToDTO(wallet.get())
     }
+
+    fun updateBalance(cvu: Long, transferenceValue: Float): WalletDTO {
+        val wallet = walletRepository.findById(cvu)
+        if (wallet.isEmpty) {
+            throw NoSuchElementException("Wallet with CVU $cvu not found")
+        }
+        val currentWallet = wallet.get()
+
+        val newBalance = currentWallet.balance + transferenceValue
+        if (newBalance < 0) {
+            throw IllegalArgumentException("Insufficient balance for the transaction")
+        }
+
+        val updatedWalletToSave = currentWallet.copy(balance = newBalance)
+        val updatedWallet = walletRepository.save(updatedWalletToSave)
+        val updatedWalletDTO = walletFactory.translateWalletEntityToDTO(updatedWallet)
+
+        return updatedWalletDTO
+    }
 }
