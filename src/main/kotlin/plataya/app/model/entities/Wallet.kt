@@ -1,6 +1,7 @@
 package plataya.app.model.entities
 
 import jakarta.persistence.*
+import plataya.app.model.entities.User
 
 @Entity
 data class Wallet(
@@ -12,6 +13,7 @@ data class Wallet(
     val cvu: Long,
 
     @OneToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     val user: User,
 
     val balance: Float

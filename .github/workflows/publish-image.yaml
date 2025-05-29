@@ -3,7 +3,7 @@ name: "Publish Docker images workflow"
 on:
   pull_request:
     types: [ closed ]
-    branches: [ main, dev ]
+    branches: [ main ]
 
 jobs:
   push_to_registry:
