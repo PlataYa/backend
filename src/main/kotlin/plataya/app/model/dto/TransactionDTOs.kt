@@ -1,8 +1,8 @@
-package plataya.app.dto
+package plataya.app.model.dto
 
-import plataya.app.entity.TransactionStatus
-import plataya.app.entity.TransactionType
-import plataya.app.entity.Currency
+import plataya.app.model.entity.TransactionStatus
+import plataya.app.model.entity.TransactionType
+import plataya.app.model.entity.Currency
 import java.time.LocalDateTime
 
 // Request DTOs

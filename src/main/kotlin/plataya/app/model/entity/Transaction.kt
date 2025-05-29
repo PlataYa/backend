@@ -1,7 +1,6 @@
-package plataya.app.entity
+package plataya.app.model.entity
 
 import jakarta.persistence.*
-import plataya.app.entity.Currency
 import java.time.LocalDateTime
 
 @Entity

@@ -1,4 +1,4 @@
-package plataya.app.entity
+package plataya.app.model.entity
 
 import jakarta.persistence.*
 

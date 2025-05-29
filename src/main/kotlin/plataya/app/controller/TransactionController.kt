@@ -3,11 +3,14 @@ package plataya.app.controller
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import plataya.app.dto.*
 import plataya.app.exception.InsufficientFundsException
 import plataya.app.exception.InvalidTransactionException
 import plataya.app.exception.TransactionNotFoundException
 import plataya.app.exception.WalletNotFoundException
+import plataya.app.model.dto.DepositDTO
+import plataya.app.model.dto.P2PTransferDTO
+import plataya.app.model.dto.TransactionResponse
+import plataya.app.model.dto.WithdrawalDTO
 import plataya.app.service.TransactionService
 
 @RestController

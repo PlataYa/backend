@@ -2,7 +2,7 @@ package plataya.app.controller
 
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import plataya.app.dto.CvuValidationResponseDTO
+import plataya.app.model.dto.CvuValidationResponseDTO
 import plataya.app.repository.WalletRepository
 
 @RestController
