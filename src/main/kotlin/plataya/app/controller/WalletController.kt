@@ -3,14 +3,10 @@ package plataya.app.controller
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import plataya.app.model.dtos.CvuValidationResponseDTO
-import plataya.app.repository.WalletRepository
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping
-import plataya.app.dto.CreateWalletRequest
 import plataya.app.service.WalletService
 
 @RestController
@@ -18,6 +14,16 @@ import plataya.app.service.WalletService
 class WalletController @Autowired constructor(
     private val walletService: WalletService
 ) {
+    @GetMapping("/{cvu}")
+    fun getWalletByCvu(@PathVariable cvu: Long): ResponseEntity<Any> {
+        return try {
+            val wallet = walletService.getWalletByCvu(cvu)
+            ResponseEntity.ok(wallet)
+        } catch (e: Exception) {
+            ResponseEntity.internalServerError().body(mapOf("error" to e.message))
+        }
+    }
+
     @GetMapping("/all")
     fun getAllWallets(): ResponseEntity<Any> {
         return try {

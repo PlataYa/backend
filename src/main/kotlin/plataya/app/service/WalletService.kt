@@ -35,4 +35,12 @@ class WalletService(
     fun validateCvu(cvu: Long): Boolean {
         return walletRepository.existsByCvu(cvu)
     }
+
+    fun getWalletByCvu(cvu: Long): WalletDTO {
+        val wallet = walletRepository.findById(cvu)
+        if (wallet.isEmpty) {
+            throw NoSuchElementException("Wallet with CVU $cvu not found")
+        }
+        return walletFactory.translateWalletEntityToDTO(wallet.get())
+    }
 }
