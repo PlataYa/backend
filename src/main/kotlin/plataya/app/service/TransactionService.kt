@@ -2,8 +2,6 @@ package plataya.app.service
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import plataya.app.model.dtos.*
-import plataya.app.model.entities.*
 import plataya.app.exception.InsufficientFundsException
 import plataya.app.exception.InvalidTransactionException
 import plataya.app.exception.TransactionNotFoundException
@@ -15,6 +13,7 @@ import plataya.app.model.dtos.WithdrawalDTO
 import plataya.app.model.entities.Transaction
 import plataya.app.model.entities.TransactionStatus
 import plataya.app.model.entities.TransactionType
+import plataya.app.model.entities.Wallet
 import plataya.app.repository.TransactionRepository
 import plataya.app.repository.WalletRepository
 import java.time.LocalDateTime
@@ -25,23 +24,35 @@ class TransactionService(
     private val walletRepository: WalletRepository
 ) {
 
+    private fun validatePositiveAmount(amount: Float, operationName: String) {
+        if (amount <= 0.0f) {
+            throw InvalidTransactionException("$operationName amount must be positive.")
+        }
+    }
+
+    private fun findWalletOrThrow(cvu: Long, walletDescription: String): Wallet {
+        return walletRepository.findById(cvu)
+            .orElseThrow { WalletNotFoundException("$walletDescription wallet with ID $cvu not found.") }
+    }
+
+    private fun validateSufficientFunds(wallet: Wallet, amount: Float) {
+        if (wallet.balance < amount) {
+            throw InsufficientFundsException("${wallet.user.name} ${wallet.user.lastname}'s wallet has insufficient funds.")
+        }
+    }
+
     @Transactional
     fun createP2PTransfer(request: P2PTransferDTO): TransactionResponse {
+        validatePositiveAmount(request.amount, "Transaction")
+
         if (request.payerCvu == request.payeeCvu) {
             throw InvalidTransactionException("Payer and payee CVU cannot be the same.")
         }
-        if (request.amount <= 0.0f) {
-            throw InvalidTransactionException("Transaction amount must be positive.")
-        }
 
-        val payerWallet = walletRepository.findByCvu(request.payerCvu)
-            ?: throw WalletNotFoundException("Payer wallet with CVU ${request.payerCvu} not found.")
-        val payeeWallet = walletRepository.findByCvu(request.payeeCvu)
-            ?: throw WalletNotFoundException("Payee wallet with CVU ${request.payeeCvu} not found.")
+        val payerWallet = findWalletOrThrow(request.payerCvu, "Payer")
+        val payeeWallet = findWalletOrThrow(request.payeeCvu, "Payee")
 
-        if (payerWallet.balance < request.amount) {
-            throw InsufficientFundsException("Payer wallet has insufficient funds.")
-        }
+        validateSufficientFunds(payerWallet, request.amount)
 
         val updatedPayerWallet = payerWallet.copy(balance = payerWallet.balance - request.amount)
         walletRepository.save(updatedPayerWallet)
@@ -60,18 +71,13 @@ class TransactionService(
 
         val savedTransaction = transactionRepository.save(transaction)
         return savedTransaction.toResponse()
-
-         */
     }
 
     @Transactional
     fun createDeposit(request: DepositDTO): TransactionResponse {
-        if (request.amount <= 0.0f) {
-            throw InvalidTransactionException("Deposit amount must be positive.")
-        }
+        validatePositiveAmount(request.amount, "Deposit")
 
-        val payeeWallet = walletRepository.findByCvu(request.payeeCvu)
-            ?: throw WalletNotFoundException("Payee wallet with CVU ${request.payeeCvu} not found.")
+        val payeeWallet = findWalletOrThrow(request.payeeCvu, "Payee")
 
         val updatedPayeeWalletForDeposit = payeeWallet.copy(balance = payeeWallet.balance + request.amount)
         walletRepository.save(updatedPayeeWalletForDeposit)
@@ -91,16 +97,11 @@ class TransactionService(
 
     @Transactional
     fun createWithdrawal(request: WithdrawalDTO): TransactionResponse {
-        if (request.amount <= 0.0f) {
-            throw InvalidTransactionException("Withdrawal amount must be positive.")
-        }
+        validatePositiveAmount(request.amount, "Withdrawal")
 
-        val payerWallet = walletRepository.findByCvu(request.payerCvu)
-            ?: throw WalletNotFoundException("Payer wallet with CVU ${request.payerCvu} not found.")
+        val payerWallet = findWalletOrThrow(request.payerCvu, "Payer")
 
-        if (payerWallet.balance < request.amount) {
-            throw InsufficientFundsException("Payer wallet has insufficient funds for withdrawal.")
-        }
+        validateSufficientFunds(payerWallet, request.amount)
 
         val updatedPayerWalletForWithdrawal = payerWallet.copy(balance = payerWallet.balance - request.amount)
         walletRepository.save(updatedPayerWalletForWithdrawal)
