@@ -14,7 +14,7 @@ import plataya.app.model.dtos.WithdrawalDTO
 import plataya.app.service.TransactionService
 
 @RestController
-@RequestMapping("/api/v1/transactions")
+@RequestMapping("/api/v1/transaction")
 class TransactionController(
     private val transactionService: TransactionService
 ) {
