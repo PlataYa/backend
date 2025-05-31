@@ -6,10 +6,9 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import plataya.app.dto.UserDTO
-import plataya.app.entity.User
+import plataya.app.model.entities.User
 import plataya.app.repository.UserRepository
-
+/*
 @RestController
 @RequestMapping("/test")
 class TestController(private val userRepository: UserRepository) {
@@ -51,4 +50,4 @@ class TestController(private val userRepository: UserRepository) {
             return ResponseEntity.internalServerError().body(mapOf("error" to e.message))
         }
     }
-}
+}*/
