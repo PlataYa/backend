@@ -11,7 +11,7 @@ import java.util.Optional
 import java.util.function.Function
 
 class MockWalletRepository: WalletRepository {
-    private val wallets = mutableListOf<Wallet>()
+    private val wallets = mutableMapOf<Long, Wallet>()
 
     override fun flush() {
         TODO("Not yet implemented")
@@ -65,7 +65,7 @@ class MockWalletRepository: WalletRepository {
     }
 
     override fun findAll(): List<Wallet?> {
-        return wallets
+        return wallets.values.toList()
     }
 
     override fun findAllById(ids: Iterable<Long?>): List<Wallet?> {
@@ -107,46 +107,45 @@ class MockWalletRepository: WalletRepository {
     }
 
     override fun <S : Wallet?> save(entity: S & Any): S & Any {
-        if (entity != null) {
-            wallets.add(entity as Wallet)
-        }
+        val wallet = entity as Wallet
+        wallets[wallet.cvu] = wallet
         return entity
     }
 
-    override fun findById(id: Long): Optional<Wallet?> {
-        TODO("Not yet implemented")
+    override fun findById(id: Long): Optional<Wallet> {
+        return Optional.ofNullable(wallets[id])
     }
 
     override fun existsById(id: Long): Boolean {
-        TODO("Not yet implemented")
+        return wallets.containsKey(id)
     }
 
     override fun count(): Long {
-        TODO("Not yet implemented")
+        return wallets.size.toLong()
     }
 
     override fun deleteById(id: Long) {
-        TODO("Not yet implemented")
+        wallets.remove(id)
     }
 
     override fun delete(entity: Wallet) {
-        TODO("Not yet implemented")
+        wallets.remove(entity.cvu)
     }
 
     override fun deleteAllById(ids: Iterable<Long?>) {
-        TODO("Not yet implemented")
+        ids.filterNotNull().forEach { wallets.remove(it) }
     }
 
     override fun deleteAll(entities: Iterable<Wallet?>) {
-        TODO("Not yet implemented")
+        entities.filterNotNull().forEach { wallets.remove(it.cvu) }
     }
 
     override fun deleteAll() {
-        TODO("Not yet implemented")
+        wallets.clear()
     }
 
     override fun existsByCvu(cvu: Long): Boolean {
-        return wallets.any { it.cvu == cvu }
+        return wallets.containsKey(cvu)
     }
 }
 
