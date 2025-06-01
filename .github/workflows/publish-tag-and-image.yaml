@@ -1,4 +1,4 @@
-name: "Create Git Tag with Semantic Versioning"
+name: "Create Release and Publish Docker Image"
 
 on:
   pull_request:
@@ -6,11 +6,14 @@ on:
     branches: [ main, dev ]
 
 jobs:
-  create_tag:
-    name: Create Git Tag
+  create_release:
+    name: Create Git Tag and Release
     runs-on: ubuntu-latest
     # Only run if the PR was merged (not just closed)
     if: github.event.pull_request.merged == true
+    outputs:
+      version: ${{ steps.read_version.outputs.version }}
+      version_type: ${{ steps.version_type.outputs.type }}
 
     steps:
       - name: Checkout code
@@ -98,3 +101,37 @@ jobs:
             **Full Changelog**: https://github.com/${{ github.repository }}/compare/v${{ steps.read_version.outputs.version }}...v${{ env.VERSION }}
           draft: false
           prerelease: false
+
+  publish_docker_image:
+    name: Push Docker Image to GitHub Packages
+    runs-on: ubuntu-latest
+    needs: create_release
+    # Only publish Docker image if we're on main branch
+    if: github.ref_name == 'main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          # Ensure we have the latest changes including the VERSION file update
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: plataya
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push to GitHub Packages
+        id: docker_build
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: |
+            ghcr.io/plataya/backend:latest
+            ghcr.io/plataya/backend:${{ needs.create_release.outputs.version }}
