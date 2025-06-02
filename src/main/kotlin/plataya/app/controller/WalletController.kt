@@ -28,19 +28,19 @@ class WalletController @Autowired constructor(
     @GetMapping("/all")
     fun getAllWallets(): ResponseEntity<AllWalletsDTO> {
         val wallets = walletService.getAllWallets()
-        return ResponseEntity.ok(AllWalletsDTO(wallets = wallets))
+        return ResponseEntity.ok(wallets)
     }
 
     @GetMapping("/valid/cvu")
     fun validateCvu(@RequestParam cvu: Long): ResponseEntity<CvuValidationResponseDTO> {
         val exists = walletService.validateCvu(cvu)
-        return ResponseEntity.ok(CvuValidationResponseDTO(valid = exists))
+        return ResponseEntity.ok(exists)
     }
 
     @GetMapping("/balance/{cvu}")
     fun getBalanceByCvu(@PathVariable cvu: Long): ResponseEntity<BalanceDTO> {
         val balance = walletService.getBalanceByCvu(cvu)
-        return ResponseEntity.ok(BalanceDTO(cvu = cvu, balance = balance))
+        return ResponseEntity.ok(balance)
     }
 
     @ExceptionHandler(WalletNotFoundException::class)

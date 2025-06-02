@@ -5,6 +5,9 @@ import org.springframework.stereotype.Service
 import plataya.app.exception.WalletNotFoundException
 import plataya.app.model.dtos.WalletDTO
 import plataya.app.factory.WalletFactory
+import plataya.app.model.dtos.AllWalletsDTO
+import plataya.app.model.dtos.BalanceDTO
+import plataya.app.model.dtos.CvuValidationResponseDTO
 import plataya.app.model.entities.User
 import plataya.app.repository.WalletRepository
 
@@ -23,18 +26,15 @@ class WalletService(
         return walletDTO
     }
 
-    fun getAllWallets(): List<WalletDTO> {
-        return walletRepository.findAll().map { wallet ->
-            WalletDTO(
-                userMail = wallet.user.mail,
-                cvu = wallet.cvu,
-                balance = wallet.balance
-            )
-        }
+    fun getAllWallets(): AllWalletsDTO {
+        val wallets = walletRepository.findAll()
+        val walletDTOs = wallets.map { walletFactory.translateWalletEntityToDTO(it) }
+        return AllWalletsDTO(wallets = walletDTOs)
     }
 
-    fun validateCvu(cvu: Long): Boolean {
-        return walletRepository.existsByCvu(cvu)
+    fun validateCvu(cvu: Long): CvuValidationResponseDTO {
+        val exists = walletRepository.existsByCvu(cvu)
+        return CvuValidationResponseDTO(valid = exists)
     }
 
     fun getWalletByCvu(cvu: Long): WalletDTO {
@@ -45,12 +45,13 @@ class WalletService(
         return walletFactory.translateWalletEntityToDTO(wallet.get())
     }
 
-    fun getBalanceByCvu(cvu: Long): Float {
+    fun getBalanceByCvu(cvu: Long): BalanceDTO {
         val wallet = walletRepository.findById(cvu)
         if (wallet.isEmpty) {
             throw WalletNotFoundException("Wallet with CVU $cvu not found")
         }
-        return wallet.get().balance
+        val currentWallet = wallet.get()
+        return BalanceDTO(cvu= cvu, balance = currentWallet.balance)
     }
 
     fun updateBalance(cvu: Long, transferenceValue: Float): WalletDTO {
