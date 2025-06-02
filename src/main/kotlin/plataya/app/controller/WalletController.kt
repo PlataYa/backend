@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping
+import plataya.app.model.dtos.BalanceDTO
 import plataya.app.service.WalletService
 
 @RestController
@@ -38,5 +39,15 @@ class WalletController @Autowired constructor(
     fun validateCvu(@RequestParam cvu: Long): ResponseEntity<CvuValidationResponseDTO> {
         val exists = walletService.validateCvu(cvu)
         return ResponseEntity.ok(CvuValidationResponseDTO(valid = exists))
+    }
+
+    @GetMapping("/balance/{cvu}")
+    fun getBalanceByCvu(@PathVariable cvu: Long): BalanceDTO {
+        return try {
+            val balance = walletService.getBalanceByCvu(cvu)
+            BalanceDTO(cvu = cvu, balance = balance)
+        } catch (e: Exception) {
+            throw NoSuchElementException("Wallet with CVU $cvu not found")
+        }
     }
 }

@@ -44,6 +44,14 @@ class WalletService(
         return walletFactory.translateWalletEntityToDTO(wallet.get())
     }
 
+    fun getBalanceByCvu(cvu: Long): Float {
+        val wallet = walletRepository.findById(cvu)
+        if (wallet.isEmpty) {
+            throw NoSuchElementException("Wallet with CVU $cvu not found")
+        }
+        return wallet.get().balance
+    }
+
     fun updateBalance(cvu: Long, transferenceValue: Float): WalletDTO {
         val wallet = walletRepository.findById(cvu)
         if (wallet.isEmpty) {
