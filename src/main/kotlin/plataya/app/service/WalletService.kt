@@ -2,6 +2,7 @@ package plataya.app.service
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import plataya.app.exception.InsufficientFundsException
 import plataya.app.exception.WalletNotFoundException
 import plataya.app.model.dtos.WalletDTO
 import plataya.app.factory.WalletFactory
@@ -46,24 +47,20 @@ class WalletService(
     }
 
     fun getBalanceByCvu(cvu: Long): BalanceDTO {
-        val wallet = walletRepository.findById(cvu)
-        if (wallet.isEmpty) {
-            throw WalletNotFoundException("Wallet with CVU $cvu not found")
-        }
-        val currentWallet = wallet.get()
-        return BalanceDTO(cvu= cvu, balance = currentWallet.balance)
+        val wallet = getWalletByCvu(cvu)
+        return BalanceDTO(cvu= cvu, balance = wallet.balance)
     }
 
     fun updateBalance(cvu: Long, transferenceValue: Float): WalletDTO {
         val wallet = walletRepository.findById(cvu)
         if (wallet.isEmpty) {
-            throw NoSuchElementException("Wallet with CVU $cvu not found")
+            throw WalletNotFoundException("Wallet with CVU $cvu not found")
         }
         val currentWallet = wallet.get()
 
         val newBalance = currentWallet.balance + transferenceValue
         if (newBalance < 0) {
-            throw IllegalArgumentException("Insufficient balance for the transaction")
+            throw InsufficientFundsException("Insufficient balance for the transaction")
         }
 
         val updatedWalletToSave = currentWallet.copy(balance = newBalance)
