@@ -2,6 +2,7 @@ package plataya.app.service
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import plataya.app.exception.WalletNotFoundException
 import plataya.app.model.dtos.WalletDTO
 import plataya.app.factory.WalletFactory
 import plataya.app.model.entities.User
@@ -39,7 +40,7 @@ class WalletService(
     fun getWalletByCvu(cvu: Long): WalletDTO {
         val wallet = walletRepository.findById(cvu)
         if (wallet.isEmpty) {
-            throw NoSuchElementException("Wallet with CVU $cvu not found")
+            throw WalletNotFoundException("Wallet with CVU $cvu not found")
         }
         return walletFactory.translateWalletEntityToDTO(wallet.get())
     }
@@ -47,7 +48,7 @@ class WalletService(
     fun getBalanceByCvu(cvu: Long): Float {
         val wallet = walletRepository.findById(cvu)
         if (wallet.isEmpty) {
-            throw NoSuchElementException("Wallet with CVU $cvu not found")
+            throw WalletNotFoundException("Wallet with CVU $cvu not found")
         }
         return wallet.get().balance
     }

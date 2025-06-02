@@ -6,8 +6,12 @@ import plataya.app.model.dtos.CvuValidationResponseDTO
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
+import plataya.app.exception.WalletNotFoundException
+import plataya.app.model.dtos.AllWalletsDTO
 import plataya.app.model.dtos.BalanceDTO
+import plataya.app.model.dtos.WalletDTO
 import plataya.app.service.WalletService
 
 @RestController
@@ -16,23 +20,15 @@ class WalletController @Autowired constructor(
     private val walletService: WalletService
 ) {
     @GetMapping("/{cvu}")
-    fun getWalletByCvu(@PathVariable cvu: Long): ResponseEntity<Any> {
-        return try {
-            val wallet = walletService.getWalletByCvu(cvu)
-            ResponseEntity.ok(wallet)
-        } catch (e: Exception) {
-            ResponseEntity.internalServerError().body(mapOf("error" to e.message))
-        }
+    fun getWalletByCvu(@PathVariable cvu: Long): ResponseEntity<WalletDTO> {
+        val wallet = walletService.getWalletByCvu(cvu)
+        return ResponseEntity.ok(wallet)
     }
 
     @GetMapping("/all")
-    fun getAllWallets(): ResponseEntity<Any> {
-        return try {
-            val wallets = walletService.getAllWallets()
-            ResponseEntity.ok(wallets)
-        } catch (e: Exception) {
-            ResponseEntity.internalServerError().body(mapOf("error" to e.message))
-        }
+    fun getAllWallets(): ResponseEntity<AllWalletsDTO> {
+        val wallets = walletService.getAllWallets()
+        return ResponseEntity.ok(AllWalletsDTO(wallets = wallets))
     }
 
     @GetMapping("/valid/cvu")
@@ -42,12 +38,13 @@ class WalletController @Autowired constructor(
     }
 
     @GetMapping("/balance/{cvu}")
-    fun getBalanceByCvu(@PathVariable cvu: Long): BalanceDTO {
-        return try {
-            val balance = walletService.getBalanceByCvu(cvu)
-            BalanceDTO(cvu = cvu, balance = balance)
-        } catch (e: Exception) {
-            throw NoSuchElementException("Wallet with CVU $cvu not found")
-        }
+    fun getBalanceByCvu(@PathVariable cvu: Long): ResponseEntity<BalanceDTO> {
+        val balance = walletService.getBalanceByCvu(cvu)
+        return ResponseEntity.ok(BalanceDTO(cvu = cvu, balance = balance))
+    }
+
+    @ExceptionHandler(WalletNotFoundException::class)
+    fun handleWalletNotFound(ex: WalletNotFoundException): ResponseEntity<String> {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.message ?: "Wallet not found")
     }
 }
