@@ -150,4 +150,10 @@ class MockTransactionRepository: TransactionRepository {
     override fun deleteAll() {
         transactions.clear()
     }
+
+    override fun findAllByCvu(cvu: Long): List<Transaction> {
+        return transactions.values.filter { transaction ->
+            transaction.payerWallet?.cvu == cvu || transaction.payeeWallet?.cvu == cvu
+        }.sortedByDescending { it.createdAt }
+    }
 }

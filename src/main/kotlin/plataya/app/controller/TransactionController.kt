@@ -43,6 +43,12 @@ class TransactionController(
         return ResponseEntity.ok(transaction)
     }
     
+    @GetMapping("/{cvu}/history")
+    fun getTransactionHistory(@PathVariable cvu: Long): ResponseEntity<List<TransactionResponse>> {
+        val transactions = transactionService.getTransactionsByCvu(cvu)
+        return ResponseEntity.ok(transactions)
+    }
+    
     @ExceptionHandler(WalletNotFoundException::class)
     fun handleWalletNotFound(ex: WalletNotFoundException): ResponseEntity<String> {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.message)

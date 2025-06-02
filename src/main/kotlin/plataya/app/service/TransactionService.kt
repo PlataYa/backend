@@ -125,6 +125,14 @@ class TransactionService(
         return transaction.toResponse()
     }
 
+    fun getTransactionsByCvu(cvu: Long): List<TransactionResponse> {
+        walletRepository.findById(cvu)
+            .orElseThrow { WalletNotFoundException("Wallet with CVU $cvu not found.") }
+        
+        val transactions = transactionRepository.findAllByCvu(cvu)
+        return transactions.map { it.toResponse() }
+    }
+
     private fun Transaction.toResponse(): TransactionResponse {
         return TransactionResponse(
             transactionId = this.transactionId!!,
