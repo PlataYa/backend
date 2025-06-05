@@ -21,8 +21,8 @@ class WalletController @Autowired constructor(
     private val walletService: WalletService
 ) {
     @GetMapping("/mine")
-    fun getUserWallet(@RequestBody mailDTO: MailDTO): ResponseEntity<WalletDTO> {
-        val wallet = walletService.getWalletByUserMail(mailDTO.mail)
+    fun getUserWallet(@RequestParam mail: String): ResponseEntity<WalletDTO> {
+        val wallet = walletService.getWalletByUserMail(mail)
         return ResponseEntity.ok(wallet)
     }
 

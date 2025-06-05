@@ -41,8 +41,7 @@ class WalletControllerTest {
             .content(userJson))
             .andExpect(MockMvcResultMatchers.status().isOk)
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/wallet/mine")
-            .contentType("application/json").content("""{ "mail": "nacho@mail.com" }"""))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/wallet/mine?mail=nacho@mail.com"))
             .andExpect(MockMvcResultMatchers.status().isOk)
             .andExpect(MockMvcResultMatchers.jsonPath("$.balance").value(0))
     }
