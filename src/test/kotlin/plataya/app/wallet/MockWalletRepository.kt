@@ -7,11 +7,16 @@ import org.springframework.data.domain.Sort
 import org.springframework.data.repository.query.FluentQuery
 import plataya.app.model.entities.Wallet
 import plataya.app.repository.WalletRepository
+import plataya.app.model.entities.User
 import java.util.Optional
 import java.util.function.Function
 
 class MockWalletRepository: WalletRepository {
     private val wallets = mutableMapOf<Long, Wallet>()
+
+    override fun findByUser(user: User): Wallet? {
+        return wallets.values.find { it.user.id == user.id }
+    }
 
     override fun flush() {
         TODO("Not yet implemented")

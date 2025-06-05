@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service
 import plataya.app.model.entities.User
 import plataya.app.model.dtos.UserDtoResponse
 import plataya.app.repository.UserRepository
+import plataya.app.repository.WalletRepository
 import plataya.app.authentication.TokenProvider
 import plataya.app.exception.InvalidCredentialsException
 
@@ -17,7 +18,8 @@ class UserService(
     private val userRepository: UserRepository,  
     private val passwordEncoder: PasswordEncoder, 
     private val tokenProvider: TokenProvider,
-    private val walletService: WalletService
+    private val walletService: WalletService,
+    private val walletRepository: WalletRepository
 ): UserDetailsService {
     
     override fun loadUserByUsername(email: String?): UserDetails {
@@ -48,22 +50,34 @@ class UserService(
             dayOfBirth = dayOfBirth
         )
 
+        // Primero guardamos el usuario
         val savedUser = userRepository.save(user)
-        val userDTO = translateUserToUserDtoResponse(savedUser)
+        
+        // Generamos el token
         val token = tokenProvider.generateToken(savedUser.id.toString(), savedUser.mail, savedUser.name, savedUser.lastname)
-        userDTO.token = token
-
-//        Wallet creation here
+        
+        // Creamos el wallet
         val wallet = walletService.createWallet(savedUser)
-
-        return userDTO
+        
+        // Finalmente creamos el DTO con toda la información
+        return UserDtoResponse(
+            name = savedUser.name,
+            lastname = savedUser.lastname,
+            mail = savedUser.mail,
+            cvu = wallet.cvu,
+            token = token
+        )
     }
 
     private fun translateUserToUserDtoResponse(user: User): UserDtoResponse {
+        // Buscar el wallet del usuario
+        val wallet = walletRepository.findByUser(user)
+        
         return UserDtoResponse(
             name = user.name,
             lastname = user.lastname,
             mail = user.mail,
+            cvu = wallet?.cvu
         )
     }
     
@@ -78,7 +92,6 @@ class UserService(
         val userDTO = translateUserToUserDtoResponse(user)
         val token = tokenProvider.generateToken(user.id.toString(), user.mail, user.name, user.lastname)
         userDTO.token = token
-    
         return userDTO
     }
 }
