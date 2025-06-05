@@ -32,9 +32,7 @@ class TransactionControllerTest {
             .content(userJson))
             .andExpect(MockMvcResultMatchers.status().isOk)
 
-        val mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/wallet/mine")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("""{ "mail": "$userEmail" }"""))
+        val mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/wallet/mine?mail=$userEmail"))
             .andExpect(MockMvcResultMatchers.status().isOk)
             .andReturn()
         
