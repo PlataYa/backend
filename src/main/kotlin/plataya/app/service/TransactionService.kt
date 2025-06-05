@@ -2,6 +2,7 @@ package plataya.app.service
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import plataya.app.client.ExternalWalletClient
 import plataya.app.exception.InsufficientFundsException
 import plataya.app.exception.InvalidTransactionException
 import plataya.app.exception.TransactionNotFoundException
@@ -21,7 +22,8 @@ import java.time.LocalDateTime
 @Service
 class TransactionService(
     private val transactionRepository: TransactionRepository,
-    private val walletRepository: WalletRepository
+    private val walletRepository: WalletRepository,
+    private val externalWalletClient: ExternalWalletClient
 ) {
 
     private fun validatePositiveAmount(amount: Float, operationName: String) {
@@ -39,6 +41,16 @@ class TransactionService(
         if (wallet.balance < amount) {
             throw InsufficientFundsException("${wallet.user.name} ${wallet.user.lastname}'s wallet has insufficient funds.")
         }
+    }
+
+    private fun validateExternalSourceCvu(sourceCvu: Long, amount: Float) {
+        // Validate that external CVU exists and has sufficient funds
+        externalWalletClient.validateExternalBalance(sourceCvu, amount)
+    }
+
+    private fun validateExternalDestinationCvu(destinationCvu: Long) {
+        // Validate that external CVU exists
+        externalWalletClient.validateExternalCvu(destinationCvu)
     }
 
     @Transactional
@@ -77,6 +89,11 @@ class TransactionService(
     fun createDeposit(request: DepositDTO): TransactionResponse {
         validatePositiveAmount(request.amount, "Deposit")
 
+        // Validate external source CVU if provided
+        request.sourceCvu?.let { sourceCvu ->
+            validateExternalSourceCvu(sourceCvu, request.amount)
+        }
+
         val payeeWallet = findWalletOrThrow(request.payeeCvu, "Payee")
 
         val updatedPayeeWalletForDeposit = payeeWallet.copy(balance = payeeWallet.balance + request.amount)
@@ -102,6 +119,11 @@ class TransactionService(
         val payerWallet = findWalletOrThrow(request.payerCvu, "Payer")
 
         validateSufficientFunds(payerWallet, request.amount)
+
+        // Validate external destination CVU if provided
+        request.destinationCvu?.let { destinationCvu ->
+            validateExternalDestinationCvu(destinationCvu)
+        }
 
         val updatedPayerWalletForWithdrawal = payerWallet.copy(balance = payerWallet.balance - request.amount)
         walletRepository.save(updatedPayerWalletForWithdrawal)

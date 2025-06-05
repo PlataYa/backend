@@ -7,6 +7,9 @@ import plataya.app.exception.InsufficientFundsException
 import plataya.app.exception.InvalidTransactionException
 import plataya.app.exception.TransactionNotFoundException
 import plataya.app.exception.WalletNotFoundException
+import plataya.app.exception.ExternalServiceException
+import plataya.app.exception.ExternalWalletNotFoundException
+import plataya.app.exception.ExternalInsufficientFundsException
 import plataya.app.model.dtos.DepositDTO
 import plataya.app.model.dtos.P2PTransferDTO
 import plataya.app.model.dtos.TransactionResponse
@@ -67,5 +70,20 @@ class TransactionController(
     @ExceptionHandler(TransactionNotFoundException::class)
     fun handleTransactionNotFound(ex: TransactionNotFoundException): ResponseEntity<String> {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.message)
+    }
+
+    @ExceptionHandler(ExternalServiceException::class)
+    fun handleExternalServiceError(ex: ExternalServiceException): ResponseEntity<String> {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(ex.message)
+    }
+
+    @ExceptionHandler(ExternalWalletNotFoundException::class)
+    fun handleExternalWalletNotFound(ex: ExternalWalletNotFoundException): ResponseEntity<String> {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.message)
+    }
+
+    @ExceptionHandler(ExternalInsufficientFundsException::class)
+    fun handleExternalInsufficientFunds(ex: ExternalInsufficientFundsException): ResponseEntity<String> {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.message)
     }
 } 
