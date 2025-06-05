@@ -7,4 +7,5 @@ import plataya.app.model.entities.Wallet
 @Repository
 interface WalletRepository : JpaRepository<Wallet, Long> {
     fun existsByCvu(cvu: Long): Boolean
+    fun findWalletByUserMail(mail: String): Wallet?
 }

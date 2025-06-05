@@ -69,4 +69,12 @@ class WalletService(
 
         return updatedWalletDTO
     }
+
+    fun getWalletByUserMail(email: String): WalletDTO {
+        val wallet = walletRepository.findWalletByUserMail(email)
+        if (wallet == null) {
+            throw WalletNotFoundException("Wallet for user with mail $email not found")
+        }
+        return walletFactory.translateWalletEntityToDTO(wallet)
+    }
 }
