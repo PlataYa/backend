@@ -29,8 +29,8 @@ class TokenProvider(
         val now = Date()
         val expiry = Date(now.time + 86_400_000) // 1 día
         return Jwts.builder()
-            .setSubject(userId)
-            .claim("email", email)
+            .setSubject(email)
+            .claim("userId", userId)
             .claim("name", name)
             .claim("lastname", lastname)
             .setIssuedAt(now)
