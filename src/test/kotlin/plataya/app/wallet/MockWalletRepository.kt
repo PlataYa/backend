@@ -147,5 +147,9 @@ class MockWalletRepository: WalletRepository {
     override fun existsByCvu(cvu: Long): Boolean {
         return wallets.containsKey(cvu)
     }
+
+    override fun findWalletByUserMail(mail: String): Wallet? {
+        TODO("Not yet implemented")
+    }
 }
 
