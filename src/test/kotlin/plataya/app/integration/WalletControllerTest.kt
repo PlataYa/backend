@@ -1,7 +1,5 @@
 package plataya.app.integration
 
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
@@ -46,7 +44,7 @@ class WalletControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/wallet/mine")
             .contentType("application/json").content("""{ "mail": "nacho@mail.com" }"""))
             .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.jsonPath("$.cvu").value(100000000001))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.balance").value(0))
     }
 
     @Test
