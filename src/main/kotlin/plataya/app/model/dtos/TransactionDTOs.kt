@@ -17,14 +17,16 @@ data class DepositDTO(
     val payeeCvu: Long,
     val amount: Float,
     val currency: Currency = Currency.ARS,
-    val externalReference: String
+    val externalReference: String,
+    val sourceCvu: Long? = null // External CVU that's sending the money
 )
 
 data class WithdrawalDTO(
     val payerCvu: Long,
     val amount: Float,
     val currency: Currency = Currency.ARS,
-    val externalReference: String
+    val externalReference: String,
+    val destinationCvu: Long? = null // External CVU that will receive the money
 )
 
 // Response DTO
