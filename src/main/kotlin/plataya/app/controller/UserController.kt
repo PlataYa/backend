@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.http.ResponseEntity
 import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.ExceptionHandler
+import plataya.app.exception.InvalidCredentialsException
 import plataya.app.model.dtos.LoginRequest
 import plataya.app.service.UserService
 import plataya.app.model.dtos.UserDtoResponse
@@ -26,5 +28,9 @@ class UserController(private val userService: UserService){
         val created = userService.loginUser(userDto.mail, userDto.password)
         return ResponseEntity.status(HttpStatus.OK).body(created)
     }
-    
+
+    @ExceptionHandler(InvalidCredentialsException::class)
+    fun handleInvalidCredentialsException(ex: InvalidCredentialsException): ResponseEntity<String> {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.message ?: "Bad Request")
+    }
 }

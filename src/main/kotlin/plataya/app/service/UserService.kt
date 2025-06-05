@@ -10,7 +10,7 @@ import plataya.app.model.entities.User
 import plataya.app.model.dtos.UserDtoResponse
 import plataya.app.repository.UserRepository
 import plataya.app.authentication.TokenProvider
-import jakarta.persistence.EntityNotFoundException
+import plataya.app.exception.InvalidCredentialsException
 
 @Service
 class UserService(
@@ -37,7 +37,7 @@ class UserService(
 
     fun register(name: String, lastname: String, mail: String, password: String, dayOfBirth: String): UserDtoResponse {
         if(userRepository.findByMail(mail) != null){
-            throw IllegalArgumentException("El email ya está registrado")
+            throw InvalidCredentialsException("Credenciales inválidas")
         }
 
         val user = User(
@@ -69,10 +69,10 @@ class UserService(
     
     fun loginUser(email: String, password: String): UserDtoResponse {
         val user = userRepository.findByMail(email)
-            ?: throw EntityNotFoundException("Usuario no encontrado")
+            ?: throw InvalidCredentialsException("Credenciales inválidas")
     
         if (!passwordEncoder.matches(password, user.password)) {
-            throw IllegalArgumentException("Contraseña no válida")
+            throw InvalidCredentialsException("Credenciales inválidas")
         }
     
         val userDTO = translateUserToUserDtoResponse(user)
