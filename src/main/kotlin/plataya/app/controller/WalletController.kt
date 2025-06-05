@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import plataya.app.exception.WalletNotFoundException
 import plataya.app.model.dtos.AllWalletsDTO
 import plataya.app.model.dtos.BalanceDTO
+import plataya.app.model.dtos.MailDTO
 import plataya.app.model.dtos.WalletDTO
 import plataya.app.service.WalletService
 
@@ -19,6 +20,12 @@ import plataya.app.service.WalletService
 class WalletController @Autowired constructor(
     private val walletService: WalletService
 ) {
+    @GetMapping("/mine")
+    fun getUserWallet(@RequestParam mail: String): ResponseEntity<WalletDTO> {
+        val wallet = walletService.getWalletByUserMail(mail)
+        return ResponseEntity.ok(wallet)
+    }
+
     @GetMapping("/{cvu}")
     fun getWalletByCvu(@PathVariable cvu: Long): ResponseEntity<WalletDTO> {
         val wallet = walletService.getWalletByCvu(cvu)
