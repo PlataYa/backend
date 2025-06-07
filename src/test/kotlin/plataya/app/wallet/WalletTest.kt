@@ -4,8 +4,8 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import plataya.app.factory.WalletFactory
-import plataya.app.model.dtos.WalletDTO
-import plataya.app.model.entities.User
+import plataya.app.model.dtos.wallet.WalletDTO
+import plataya.app.model.entities.user.User
 import plataya.app.service.WalletService
 
 class WalletTest {

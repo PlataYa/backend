@@ -2,9 +2,9 @@ package plataya.app.service
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import plataya.app.model.dtos.WalletDTO
+import plataya.app.model.dtos.wallet.WalletDTO
 import plataya.app.factory.WalletFactory
-import plataya.app.model.entities.User
+import plataya.app.model.entities.user.User
 import plataya.app.repository.WalletRepository
 
 @Service
