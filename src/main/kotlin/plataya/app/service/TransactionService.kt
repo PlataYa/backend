@@ -155,7 +155,7 @@ class TransactionService(
         val externalTransaction = externalTransactionRepository.findById(transactionId)
         if (p2pTransaction.isEmpty) {
             if (externalTransaction.isEmpty) {
-                throw  InvalidTransactionException("Transaction with ID $transactionId not found.")
+                throw TransactionNotFoundException("Transaction with ID $transactionId not found.")
             }
             return externalTransaction.get().toTransactionResponse()
         }
