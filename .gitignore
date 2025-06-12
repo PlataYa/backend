@@ -45,3 +45,6 @@ out/
 
 ### Gradle ###
 gradle.properties
+
+__pycache__
+	
