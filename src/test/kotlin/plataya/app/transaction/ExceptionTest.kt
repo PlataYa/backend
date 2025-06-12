@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import plataya.app.exception.*
 import plataya.app.model.entities.transaction.TransactionType
-import plataya.app.model.dtos.externalwallet.ExternalWalletValidationDTO
 import plataya.app.model.dtos.externalwallet.ExternalCvuValidationDTO
 import plataya.app.model.dtos.transaction.ExternalDepositResponse
 
@@ -238,7 +237,7 @@ class ExceptionTest : BaseTransactionServiceTest() {
     // --- Transaction Not Found Exception Coverage ---
     @Test
     fun `getTransactionById throws InvalidTransactionException for non-existent transaction`() {
-        val exception = assertThrows<InvalidTransactionException> {
+        val exception = assertThrows<TransactionNotFoundException> {
             transactionService.getTransactionById(99999L)
         }
         

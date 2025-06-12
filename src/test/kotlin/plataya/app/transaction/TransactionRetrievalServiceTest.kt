@@ -3,7 +3,7 @@ package plataya.app.transaction
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import plataya.app.exception.InvalidTransactionException
+import plataya.app.exception.TransactionNotFoundException
 import plataya.app.exception.WalletNotFoundException
 import plataya.app.model.entities.transaction.TransactionType
 import plataya.app.model.dtos.externalwallet.ExternalWalletValidationDTO
@@ -57,7 +57,7 @@ class TransactionRetrievalServiceTest : BaseTransactionServiceTest() {
 
     @Test
     fun `getTransactionById not found`() {
-        assertThrows<InvalidTransactionException> {
+        assertThrows<TransactionNotFoundException> {
             transactionService.getTransactionById(999L)
         }
     }
