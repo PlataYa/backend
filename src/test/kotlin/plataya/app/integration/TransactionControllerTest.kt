@@ -6,14 +6,17 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.transaction.annotation.Transactional
+import plataya.app.TestEnvironmentInitializer
 import kotlin.test.Test
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ContextConfiguration(initializers = [TestEnvironmentInitializer::class])
 @ActiveProfiles("test")
 class TransactionControllerTest {
     @Autowired
@@ -106,19 +109,20 @@ class TransactionControllerTest {
     @Test
     @Transactional
     fun `create withdrawal returns 201`() {
-        val payerCvu = createUserAndGetCvu("user.withdraw@example.com", "Withdrawer", "Client")
-        makeDeposit(payerCvu, 100.0, "initialDepositForWithdrawal")
+        val sourceCvu = createUserAndGetCvu("user.withdraw@example.com", "Withdrawer", "Client")
+        val destinationCvu = "111"
+        makeDeposit(sourceCvu, 100.0, "initialDepositForWithdrawal")
 
         val withdrawalAmount = 30.0
         val externalReference = "testWithdrawalRefABC"
-        val withdrawalJson = """{"payerCvu":$payerCvu,"amount":$withdrawalAmount,"currency":"ARS","externalReference":"$externalReference"}"""
+        val withdrawalJson = """{"sourceCvu":$sourceCvu, "destinationCvu":$destinationCvu,"amount":$withdrawalAmount,"currency":"ARS"}"""
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/transaction/withdraw")
             .contentType(MediaType.APPLICATION_JSON)
             .content(withdrawalJson))
             .andExpect(MockMvcResultMatchers.status().isCreated)
             .andExpect(MockMvcResultMatchers.jsonPath("$.type").value("WITHDRAWAL"))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.payerCvu").value(payerCvu))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.payerCvu").value(sourceCvu))
             .andExpect(MockMvcResultMatchers.jsonPath("$.amount").value(withdrawalAmount))
             .andExpect(MockMvcResultMatchers.jsonPath("$.status").value("COMPLETED"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.externalReference").value(externalReference))

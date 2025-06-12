@@ -9,7 +9,7 @@ import plataya.app.model.dtos.externalwallet.ExternalWalletValidationDTO
 import plataya.app.model.dtos.externalwallet.ExternalCvuValidationDTO
 import plataya.app.model.dtos.transaction.ExternalDepositResponse
 
-class ComprehensiveExceptionTest : BaseTransactionServiceTest() {
+class ExceptionTest : BaseTransactionServiceTest() {
 
     // --- Additional External Deposit Error Scenarios ---
     @Test
