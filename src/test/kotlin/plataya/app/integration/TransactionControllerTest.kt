@@ -44,7 +44,7 @@ class TransactionControllerTest {
     }
 
     private fun defaultDeposit(destinationCvu: Long, amount: Double, externalRef: String = "ref123"): Long {
-        val depositJson = """{"sourceCvu":111, "destinationCvu":$destinationCvu,"amount":$amount,"currency":"ARS","externalReference":"$externalRef"}"""
+        val depositJson = """{"sourceCvu":200000000001, "destinationCvu":$destinationCvu,"amount":$amount,"currency":"ARS","externalReference":"$externalRef"}"""
         val mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/transaction/deposit")
             .contentType(MediaType.APPLICATION_JSON)
             .content(depositJson))
@@ -95,7 +95,7 @@ class TransactionControllerTest {
     @Transactional
     fun `create deposit returns 201`() {
         val destinationCvu = createUserAndGetCvu("user.deposit@example.com", "Depositor", "Account")
-        val sourceCvu = 111
+        val sourceCvu = 200000000001
         val amount = 200.0
         val externalReference = "Banco Nación"
         val depositJson = """{"sourceCvu":$sourceCvu,"destinationCvu":$destinationCvu,"amount":$amount,"currency":"ARS","externalReference":"$externalReference"}"""
@@ -116,7 +116,7 @@ class TransactionControllerTest {
     @Transactional
     fun `create withdrawal returns 201`() {
         val sourceCvu = createUserAndGetCvu("user.withdraw@example.com", "Withdrawer", "Client")
-        val destinationCvu = "111"
+        val destinationCvu = "200000000001"
         defaultDeposit(sourceCvu, 100.0, "initialDepositForWithdrawal")
 
         val withdrawalAmount = 30.0
@@ -192,7 +192,7 @@ class TransactionControllerTest {
     @Transactional
     fun `createDeposit to non-existent CVU returns 404 WalletNotFound`() {
         val nonExistentCvu = 999999999997L
-        val depositJson = """{"sourceCvu":111,"destinationCvu":$nonExistentCvu,"amount":100.0,"currency":"ARS","externalReference":"wnfDeposit"}"""
+        val depositJson = """{"sourceCvu":200000000001,"destinationCvu":$nonExistentCvu,"amount":100.0,"currency":"ARS","externalReference":"wnfDeposit"}"""
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/transaction/deposit")
             .contentType(MediaType.APPLICATION_JSON)
@@ -205,7 +205,7 @@ class TransactionControllerTest {
     @Transactional
     fun `createWithdrawal from non-existent CVU returns 404 WalletNotFound`() {
         val nonExistentCvu = 999999999996L
-        val withdrawalJson = """{"sourceCvu":$nonExistentCvu,"destinationCvu":111,"amount":50.0,"currency":"ARS","externalReference":"wnfWithdraw"}"""
+        val withdrawalJson = """{"sourceCvu":$nonExistentCvu,"destinationCvu":200000000001,"amount":50.0,"currency":"ARS","externalReference":"wnfWithdraw"}"""
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/transaction/withdrawal")
             .contentType(MediaType.APPLICATION_JSON)
@@ -244,7 +244,7 @@ class TransactionControllerTest {
         val sourceCvu = createUserAndGetCvu("ex.withdraw.insufficient@example.com", "Withdrawer", "Poor")
         defaultDeposit(sourceCvu, 20.0, "smallDeposit") // Deposit less than withdrawal amount
 
-        val withdrawalJson = """{"sourceCvu":$sourceCvu,"destinationCvu":111,"amount":50.0,"currency":"ARS","externalReference":"insufficientWithdraw"}"""
+        val withdrawalJson = """{"sourceCvu":$sourceCvu,"destinationCvu":200000000001,"amount":50.0,"currency":"ARS","externalReference":"insufficientWithdraw"}"""
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/transaction/withdrawal")
             .contentType(MediaType.APPLICATION_JSON)
@@ -305,7 +305,7 @@ class TransactionControllerTest {
     @Transactional
     fun `createDeposit with negative amount returns 400 InvalidTransaction`() {
         val destinationCvu = createUserAndGetCvu("ex.deposit.negative@example.com", "Depositor", "Neg")
-        val depositJson = """{"sourceCvu":111,"destinationCvu":$destinationCvu,"amount":-100.0,"currency":"ARS"}"""
+        val depositJson = """{"sourceCvu":200000000001,"destinationCvu":$destinationCvu,"amount":-100.0,"currency":"ARS"}"""
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/transaction/deposit")
             .contentType(MediaType.APPLICATION_JSON)
@@ -333,7 +333,7 @@ class TransactionControllerTest {
         val sourceCvu = createUserAndGetCvu("ex.withdraw.negative@example.com", "Withdrawer", "Neg")
         defaultDeposit(sourceCvu, 100.0, "depositForNegWithdraw")
 
-        val withdrawalJson = """{"sourceCvu":$sourceCvu,"destinationCvu":111,"amount":-50.0,"currency":"ARS"}"""
+        val withdrawalJson = """{"sourceCvu":$sourceCvu,"destinationCvu":200000000001,"amount":-50.0,"currency":"ARS"}"""
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/transaction/withdrawal")
             .contentType(MediaType.APPLICATION_JSON)
@@ -348,7 +348,7 @@ class TransactionControllerTest {
         val sourceCvu = createUserAndGetCvu("ex.withdraw.zero@example.com", "Withdrawer", "Zero")
         defaultDeposit(sourceCvu, 100.0, "depositForZeroWithdraw")
 
-        val withdrawalJson = """{"sourceCvu":$sourceCvu,"destinationCvu":111,"amount":0.0,"currency":"ARS"}"""
+        val withdrawalJson = """{"sourceCvu":$sourceCvu,"destinationCvu":200000000001,"amount":0.0,"currency":"ARS"}"""
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/transaction/withdrawal")
             .contentType(MediaType.APPLICATION_JSON)
