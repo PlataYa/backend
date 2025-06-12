@@ -1,4 +1,4 @@
-package plataya.app.model.dtos
+package plataya.app.model.dtos.transaction
 
 import plataya.app.model.entities.transaction.Currency
 
@@ -17,5 +17,5 @@ data class ExternalTransactionDTO(
     val destinationCvu: Long,
     val amount: Float,
     val currency: Currency = Currency.ARS,
-    val externalReference: String
+    val externalReference: String?
 )
