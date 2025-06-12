@@ -3,6 +3,10 @@ package plataya.app
 import io.github.cdimascio.dotenv.Dotenv
 import java.nio.file.Files
 import java.nio.file.Paths
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.web.servlet.config.annotation.CorsRegistry
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 object DotenvConfig {
     fun loadEnv() {
@@ -30,3 +34,20 @@ object DotenvConfig {
         }
     }
 }
+
+@Configuration
+class WebConfig {
+
+    @Bean
+    fun corsConfigurer(): WebMvcConfigurer {
+        return object : WebMvcConfigurer {
+            override fun addCorsMappings(registry: CorsRegistry) {
+                registry.addMapping("/**")
+                    .allowedOrigins("*")
+                    .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                    .allowedHeaders("*")
+            }
+        }
+    }
+}
+
