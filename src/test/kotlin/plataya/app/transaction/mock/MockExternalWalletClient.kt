@@ -39,20 +39,44 @@ class MockExternalWalletClient : ExternalWalletClientInterface {
         cvuValidationResponses.clear()
         balanceValidationResponses.clear()
         depositResponses.clear()
+        shouldThrowCvuException = null
+        shouldThrowBalanceException = null
+        shouldThrowDepositException = null
     }
     
+    // Storage for exception configuration
+    private var shouldThrowCvuException: Exception? = null
+    private var shouldThrowBalanceException: Exception? = null
+    private var shouldThrowDepositException: Exception? = null
+    
+    // Methods to configure exceptions for testing
+    fun configureCvuException(exception: Exception) {
+        shouldThrowCvuException = exception
+    }
+    
+    fun configureBalanceException(exception: Exception) {
+        shouldThrowBalanceException = exception
+    }
+    
+    fun configureDepositException(exception: Exception) {
+        shouldThrowDepositException = exception
+    }
+
     // Interface implementations
     override fun validateExternalCvu(cvu: Long): ExternalCvuValidationDTO {
+        shouldThrowCvuException?.let { throw it }
         return cvuValidationResponses[cvu] 
             ?: throw RuntimeException("No CVU validation configured for CVU: $cvu")
     }
     
     override fun validateExternalBalance(cvu: Long, amount: Float): ExternalWalletValidationDTO {
+        shouldThrowBalanceException?.let { throw it }
         return balanceValidationResponses[Pair(cvu, amount)]
             ?: throw RuntimeException("No balance validation configured for CVU: $cvu, amount: $amount")
     }
     
     override fun makeExternalDeposit(destinationCvu: Long, amount: Float, currency: Currency, reference: String): ExternalDepositResponse {
+        shouldThrowDepositException?.let { throw it }
         val request = DepositRequest(destinationCvu, amount, currency, reference)
         return depositResponses[request]
             ?: throw RuntimeException("No deposit response configured for: $request")
