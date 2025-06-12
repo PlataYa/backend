@@ -2,7 +2,7 @@ package plataya.app.service
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import plataya.app.client.ExternalWalletClient
+import plataya.app.client.ExternalWalletClientInterface
 import plataya.app.exception.*
 import plataya.app.model.dtos.transaction.ExternalTransactionDTO
 import plataya.app.model.dtos.transaction.ExternalTransactionResponse
@@ -23,7 +23,7 @@ class TransactionService(
     private val p2pTransactionRepository: P2PTransactionRepository,
     private val externalTransactionRepository: ExternalTransactionRepository,
     private val walletRepository: WalletRepository,
-    private val externalWalletClient: ExternalWalletClient
+    private val externalWalletClient: ExternalWalletClientInterface
 ) {
 
     private fun validatePositiveAmount(amount: Float, operationName: String) {

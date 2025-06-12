@@ -20,9 +20,9 @@ import plataya.app.model.dtos.externalwallet.ExternalCvuValidationDTO
 class ExternalWalletClient(
     private val restTemplate: RestTemplate,
     @Value("\${external.wallet.service.url}") private val externalServiceUrl: String
-) {
+) : ExternalWalletClientInterface {
 
-    fun validateExternalCvu(cvu: Long): ExternalCvuValidationDTO {
+    override fun validateExternalCvu(cvu: Long): ExternalCvuValidationDTO {
         try {
             val url = "$externalServiceUrl/api/v1/wallet/validate-cvu"
             val requestBody = ExternalCvuValidationRequest(cvu)
@@ -43,7 +43,7 @@ class ExternalWalletClient(
         }
     }
 
-    fun validateExternalBalance(cvu: Long, amount: Float): ExternalWalletValidationDTO {
+    override fun validateExternalBalance(cvu: Long, amount: Float): ExternalWalletValidationDTO {
         // First validate that the CVU exists
         validateExternalCvu(cvu)
         
@@ -81,7 +81,7 @@ class ExternalWalletClient(
      * Make a deposit to an external CVU
      * This is called during withdrawal process to transfer money to external wallet
      */
-    fun makeExternalDeposit(destinationCvu: Long, amount: Float, currency: Currency, reference: String): ExternalDepositResponse {
+    override fun makeExternalDeposit(destinationCvu: Long, amount: Float, currency: Currency, reference: String): ExternalDepositResponse {
         try {
             val url = "$externalServiceUrl/api/v1/wallet/deposit"
             val requestBody = ExternalDepositRequest(

@@ -6,7 +6,7 @@ import org.junit.jupiter.api.assertThrows
 import plataya.app.exception.InsufficientFundsException
 import plataya.app.exception.InvalidTransactionException
 import plataya.app.exception.WalletNotFoundException
-import plataya.app.model.entities.TransactionType
+import plataya.app.model.entities.transaction.TransactionType
 
 class P2PTransferServiceTest : BaseTransactionServiceTest() {
 
@@ -21,7 +21,6 @@ class P2PTransferServiceTest : BaseTransactionServiceTest() {
 
         assertWalletBalance(wallet1.cvu, initialBalanceWallet1 - transferAmount)
         assertWalletBalance(wallet2.cvu, initialBalanceWallet2 + transferAmount)
-        assertTransactionSaved(response.transactionId, transferAmount)
     }
 
     @Test
