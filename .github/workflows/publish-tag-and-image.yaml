@@ -1,0 +1,137 @@
+name: "Create Release and Publish Docker Image"
+
+on:
+  pull_request:
+    types: [ closed ]
+    branches: [ main, dev ]
+
+jobs:
+  create_release:
+    name: Create Git Tag and Release
+    runs-on: ubuntu-latest
+    # Only run if the PR was merged (not just closed)
+    if: github.event.pull_request.merged == true
+    outputs:
+      version: ${{ steps.read_version.outputs.version }}
+      version_type: ${{ steps.version_type.outputs.type }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          # Fetch full history for proper versioning
+          fetch-depth: 0
+          # Use a token with write permissions to create tags
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Grant execute permission for update_version.sh
+        run: chmod +x ./update_version.sh
+
+      - name: Determine version bump type
+        id: version_type
+        run: |
+          # Get PR labels and title
+          PR_LABELS='${{ toJson(github.event.pull_request.labels.*.name) }}'
+          PR_TITLE='${{ github.event.pull_request.title }}'
+          echo "PR Labels: $PR_LABELS"
+          echo "PR Title: $PR_TITLE"
+          
+          # Default to patch if no specific label or title keyword is found
+          VERSION_TYPE="patch"
+          
+          # Check PR title first (case-insensitive)
+          if echo "$PR_TITLE" | grep -qi "^major\|^breaking\|\[major\]\|\[breaking\]"; then
+            VERSION_TYPE="major"
+          elif echo "$PR_TITLE" | grep -qi "^minor\|^feature\|^enhancement\|\[minor\]\|\[feature\]\|\[enhancement\]"; then
+            VERSION_TYPE="minor"
+          elif echo "$PR_TITLE" | grep -qi "^patch\|^bugfix\|^hotfix\|^fix\|\[patch\]\|\[bugfix\]\|\[hotfix\]\|\[fix\]"; then
+            VERSION_TYPE="patch"
+          # If no title keywords found, check labels (priority: major > minor > patch)
+          elif echo "$PR_LABELS" | grep -qi "major\|breaking"; then
+            VERSION_TYPE="major"
+          elif echo "$PR_LABELS" | grep -qi "minor\|feature\|enhancement"; then
+            VERSION_TYPE="minor"
+          elif echo "$PR_LABELS" | grep -qi "patch\|bugfix\|hotfix"; then
+            VERSION_TYPE="patch"
+          fi
+          
+          echo "Version bump type: $VERSION_TYPE"
+          echo "type=$VERSION_TYPE" >> $GITHUB_OUTPUT
+
+      - name: Update version
+        run: ./update_version.sh ${{ steps.version_type.outputs.type }}
+
+      - name: Commit and Push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update VERSION file"
+          branch: ${{ github.ref_name }}
+
+      - name: Read VERSION file
+        id: read_version
+        run: |
+          VERSION=$(cat VERSION)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create Git Tag
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a "v${{ env.VERSION }}" -m "Release version ${{ env.VERSION }}"
+          git push origin "v${{ env.VERSION }}"
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "v${{ env.VERSION }}"
+          release_name: "Release v${{ env.VERSION }}"
+          body: |
+            ## Changes in this Release
+            
+            **Version Bump**: ${{ steps.version_type.outputs.type }}
+            
+            This release was automatically created from PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}
+            
+            ### PR Labels Used for Versioning:
+            ${{ join(github.event.pull_request.labels.*.name, ', ') }}
+            
+            **Full Changelog**: https://github.com/${{ github.repository }}/compare/v${{ steps.read_version.outputs.version }}...v${{ env.VERSION }}
+          draft: false
+          prerelease: false
+
+  publish_docker_image:
+    name: Push Docker Image to GitHub Packages
+    runs-on: ubuntu-latest
+    needs: create_release
+    # Only publish Docker image if we're on main branch
+    if: github.ref_name == 'main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          # Ensure we have the latest changes including the VERSION file update
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: plataya
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push to GitHub Packages
+        id: docker_build
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: |
+            ghcr.io/plataya/backend:latest
+            ghcr.io/plataya/backend:${{ needs.create_release.outputs.version }}

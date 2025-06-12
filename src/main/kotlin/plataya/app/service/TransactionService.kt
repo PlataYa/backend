@@ -2,26 +2,28 @@ package plataya.app.service
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import plataya.app.exception.InsufficientFundsException
-import plataya.app.exception.InvalidTransactionException
-import plataya.app.exception.TransactionNotFoundException
-import plataya.app.exception.WalletNotFoundException
-import plataya.app.model.dtos.DepositDTO
-import plataya.app.model.dtos.P2PTransferDTO
-import plataya.app.model.dtos.TransactionResponse
-import plataya.app.model.dtos.WithdrawalDTO
-import plataya.app.model.entities.Transaction
-import plataya.app.model.entities.TransactionStatus
-import plataya.app.model.entities.TransactionType
-import plataya.app.model.entities.Wallet
-import plataya.app.repository.TransactionRepository
-import plataya.app.repository.WalletRepository
+import plataya.app.client.ExternalWalletClientInterface
+import plataya.app.exception.*
+import plataya.app.model.dtos.transaction.ExternalTransactionDTO
+import plataya.app.model.dtos.transaction.ExternalTransactionResponse
+import plataya.app.model.dtos.transaction.P2PTransferDTO
+import plataya.app.model.dtos.transaction.TransactionResponse
+import plataya.app.model.entities.transaction.ExternalTransaction
+import plataya.app.model.entities.transaction.P2PTransaction
+import plataya.app.model.entities.transaction.TransactionStatus
+import plataya.app.model.entities.transaction.TransactionType
+import plataya.app.model.entities.transaction.toResponse
+import plataya.app.model.entities.transaction.toTransactionResponse
+import plataya.app.model.entities.wallet.Wallet
+import plataya.app.repository.*
 import java.time.LocalDateTime
 
 @Service
 class TransactionService(
-    private val transactionRepository: TransactionRepository,
-    private val walletRepository: WalletRepository
+    private val p2pTransactionRepository: P2PTransactionRepository,
+    private val externalTransactionRepository: ExternalTransactionRepository,
+    private val walletRepository: WalletRepository,
+    private val externalWalletClient: ExternalWalletClientInterface
 ) {
 
     private fun validatePositiveAmount(amount: Float, operationName: String) {
@@ -43,7 +45,7 @@ class TransactionService(
 
     @Transactional
     fun createP2PTransfer(request: P2PTransferDTO): TransactionResponse {
-        validatePositiveAmount(request.amount, "Transaction")
+        validatePositiveAmount(request.amount, "P2P Transfer")
 
         if (request.payerCvu == request.payeeCvu) {
             throw InvalidTransactionException("Payer and payee CVU cannot be the same.")
@@ -54,13 +56,14 @@ class TransactionService(
 
         validateSufficientFunds(payerWallet, request.amount)
 
+        // Update balances
         val updatedPayerWallet = payerWallet.copy(balance = payerWallet.balance - request.amount)
         walletRepository.save(updatedPayerWallet)
         val updatedPayeeWallet = payeeWallet.copy(balance = payeeWallet.balance + request.amount)
         walletRepository.save(updatedPayeeWallet)
 
-        val transaction = Transaction(
-            type = TransactionType.P2P,
+        // Create and save transaction
+        val transaction = P2PTransaction(
             payerWallet = payerWallet,
             payeeWallet = payeeWallet,
             amount = request.amount,
@@ -69,73 +72,110 @@ class TransactionService(
             createdAt = LocalDateTime.now()
         )
 
-        val savedTransaction = transactionRepository.save(transaction)
+        val savedTransaction = p2pTransactionRepository.save(transaction)
         return savedTransaction.toResponse()
     }
 
     @Transactional
-    fun createDeposit(request: DepositDTO): TransactionResponse {
+    fun createDeposit(request: ExternalTransactionDTO): ExternalTransactionResponse {
         validatePositiveAmount(request.amount, "Deposit")
 
-        val payeeWallet = findWalletOrThrow(request.payeeCvu, "Payee")
+        val internalWallet = findWalletOrThrow(request.destinationCvu, "Internal")
+        
+        // This is a deposit - money coming into our system
+        externalWalletClient.validateExternalBalance(request.sourceCvu, request.amount)
+        
+        // Update balance - add money to internal wallet
+        val updatedWallet = internalWallet.copy(balance = internalWallet.balance + request.amount)
+        walletRepository.save(updatedWallet)
 
-        val updatedPayeeWalletForDeposit = payeeWallet.copy(balance = payeeWallet.balance + request.amount)
-        walletRepository.save(updatedPayeeWalletForDeposit)
-
-        val transaction = Transaction(
-            type = TransactionType.DEPOSIT,
-            payeeWallet = payeeWallet,
+        // Create and save transaction
+        val transaction = ExternalTransaction(
+            internalWallet = internalWallet,
+            externalReference = request.externalReference ?: "",
+            externalCvu = request.sourceCvu,
+            transactionType = TransactionType.DEPOSIT,
             amount = request.amount,
             currency = request.currency,
             status = TransactionStatus.COMPLETED,
-            externalReference = request.externalReference,
             createdAt = LocalDateTime.now()
         )
-        val savedTransaction = transactionRepository.save(transaction)
+
+        val savedTransaction = externalTransactionRepository.save(transaction)
         return savedTransaction.toResponse()
     }
 
     @Transactional
-    fun createWithdrawal(request: WithdrawalDTO): TransactionResponse {
+    fun createWithdrawal(request: ExternalTransactionDTO): ExternalTransactionResponse {
         validatePositiveAmount(request.amount, "Withdrawal")
 
-        val payerWallet = findWalletOrThrow(request.payerCvu, "Payer")
+        val internalWallet = findWalletOrThrow(request.sourceCvu, "Internal")
+        
+        // This is a withdrawal - money going out of our system
+        validateSufficientFunds(internalWallet, request.amount)
+        
+        // Validate external destination CVU and make deposit
+        val externalValidation = externalWalletClient.validateExternalCvu(request.destinationCvu)
+        
+        // Make the deposit to external API
+        val depositResponse = externalWalletClient.makeExternalDeposit(
+            destinationCvu = request.destinationCvu,
+            amount = request.amount,
+            currency = request.currency,
+            reference = externalValidation.bankName
+        )
+        
+        // Validate the deposit was successful
+        if (depositResponse.status != "COMPLETED") {
+            throw InvalidTransactionException("External deposit failed: ${depositResponse.message ?: "Unknown error"}")
+        }
 
-        validateSufficientFunds(payerWallet, request.amount)
+        // If external deposit succeeded, reduce balance
+        val updatedWallet = internalWallet.copy(balance = internalWallet.balance - request.amount)
+        walletRepository.save(updatedWallet)
 
-        val updatedPayerWalletForWithdrawal = payerWallet.copy(balance = payerWallet.balance - request.amount)
-        walletRepository.save(updatedPayerWalletForWithdrawal)
-
-        val transaction = Transaction(
-            type = TransactionType.WITHDRAWAL,
-            payerWallet = payerWallet,
+        // Create and save transaction
+        val transaction = ExternalTransaction(
+            internalWallet = internalWallet,
+            externalReference = externalValidation.bankName,
+            externalCvu = request.destinationCvu,
+            transactionType = TransactionType.WITHDRAWAL,
             amount = request.amount,
             currency = request.currency,
             status = TransactionStatus.COMPLETED,
-            externalReference = request.externalReference,
             createdAt = LocalDateTime.now()
         )
-        val savedTransaction = transactionRepository.save(transaction)
+
+        val savedTransaction = externalTransactionRepository.save(transaction)
         return savedTransaction.toResponse()
     }
 
     fun getTransactionById(transactionId: Long): TransactionResponse {
-        val transaction = transactionRepository.findById(transactionId)
-            .orElseThrow { TransactionNotFoundException("Transaction with ID $transactionId not found.") }
-        return transaction.toResponse()
+        val p2pTransaction = p2pTransactionRepository.findById(transactionId)
+        val externalTransaction = externalTransactionRepository.findById(transactionId)
+        if (p2pTransaction.isEmpty) {
+            if (externalTransaction.isEmpty) {
+                throw TransactionNotFoundException("Transaction with ID $transactionId not found.")
+            }
+            return externalTransaction.get().toTransactionResponse()
+        }
+        return p2pTransaction.get().toResponse()
     }
 
-    private fun Transaction.toResponse(): TransactionResponse {
-        return TransactionResponse(
-            transactionId = this.transactionId!!,
-            type = this.type,
-            payerCvu = this.payerWallet?.cvu,
-            payeeCvu = this.payeeWallet?.cvu,
-            amount = this.amount,
-            currency = this.currency,
-            status = this.status,
-            createdAt = this.createdAt,
-            externalReference = this.externalReference
-        )
+    // Mixed transaction history for a wallet
+    fun getWalletTransactionHistory(cvu: Long): List<TransactionResponse> {
+        // Verify wallet exists
+        walletRepository.findById(cvu)
+            .orElseThrow { WalletNotFoundException("Wallet with CVU $cvu not found.") }
+        
+        // Get all transaction types for this CVU
+        val p2pTransactions = p2pTransactionRepository.findAllByCvu(cvu).map { it.toResponse() }
+        val externalTransactions = externalTransactionRepository.findAllByCvu(cvu).map { it.toTransactionResponse() }
+        
+        // Combine and sort by creation time (newest first)
+        val allTransactions = (p2pTransactions + externalTransactions)
+            .sortedByDescending { it.createdAt }
+        
+        return allTransactions
     }
 } 
