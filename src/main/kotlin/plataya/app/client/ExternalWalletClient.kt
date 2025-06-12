@@ -5,12 +5,16 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.HttpClientErrorException
-import plataya.app.model.dtos.ExternalWalletValidationDTO
-import plataya.app.model.dtos.ExternalBalanceValidationRequest
-import plataya.app.model.dtos.ExternalCvuValidationRequest
+import plataya.app.model.dtos.externalwallet.ExternalWalletValidationDTO
+import plataya.app.model.dtos.externalwallet.ExternalBalanceValidationRequest
+import plataya.app.model.dtos.externalwallet.ExternalCvuValidationRequest
+import plataya.app.model.dtos.transaction.ExternalDepositRequest
+import plataya.app.model.dtos.transaction.ExternalDepositResponse
+import plataya.app.model.entities.transaction.Currency
 import plataya.app.exception.ExternalServiceException
 import plataya.app.exception.ExternalWalletNotFoundException
 import plataya.app.exception.ExternalInsufficientFundsException
+import plataya.app.model.dtos.externalwallet.ExternalCvuValidationDTO
 
 @Service
 class ExternalWalletClient(
@@ -18,14 +22,14 @@ class ExternalWalletClient(
     @Value("\${external.wallet.service.url}") private val externalServiceUrl: String
 ) {
 
-    fun validateExternalCvu(cvu: Long): ExternalWalletValidationDTO {
+    fun validateExternalCvu(cvu: Long): ExternalCvuValidationDTO {
         try {
-            val url = "$externalServiceUrl/api/v1/wallet/validate"
+            val url = "$externalServiceUrl/api/v1/wallet/validate-cvu"
             val requestBody = ExternalCvuValidationRequest(cvu)
             val response = restTemplate.postForEntity(
                 url, 
-                requestBody, 
-                ExternalWalletValidationDTO::class.java
+                requestBody,
+                ExternalCvuValidationDTO::class.java
             )
             
             return response.body ?: throw ExternalServiceException("Empty response from external service")
@@ -68,6 +72,38 @@ class ExternalWalletClient(
             }
         } catch (ex: ExternalInsufficientFundsException) {
             throw ex // Re-throw our custom exception
+        } catch (ex: Exception) {
+            throw ExternalServiceException("Failed to connect to external wallet service: ${ex.message}")
+        }
+    }
+
+    /**
+     * Make a deposit to an external CVU
+     * This is called during withdrawal process to transfer money to external wallet
+     */
+    fun makeExternalDeposit(destinationCvu: Long, amount: Float, currency: Currency, reference: String): ExternalDepositResponse {
+        try {
+            val url = "$externalServiceUrl/api/v1/wallet/deposit"
+            val requestBody = ExternalDepositRequest(
+                destinationCvu = destinationCvu,
+                amount = amount,
+                currency = currency,
+                reference = reference
+            )
+            
+            val response = restTemplate.postForEntity(
+                url,
+                requestBody,
+                ExternalDepositResponse::class.java
+            )
+            
+            return response.body ?: throw ExternalServiceException("Empty response from external service")
+        } catch (ex: HttpClientErrorException) {
+            when (ex.statusCode) {
+                HttpStatus.NOT_FOUND -> throw ExternalWalletNotFoundException("External CVU $destinationCvu not found")
+                HttpStatus.BAD_REQUEST -> throw ExternalServiceException("Invalid deposit request: ${ex.message}")
+                else -> throw ExternalServiceException("External service error: ${ex.message}")
+            }
         } catch (ex: Exception) {
             throw ExternalServiceException("Failed to connect to external wallet service: ${ex.message}")
         }

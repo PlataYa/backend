@@ -1,4 +1,4 @@
-package plataya.app.model.dtos
+package plataya.app.model.dtos.externalwallet
 
 data class ExternalWalletValidationDTO(
     val cvu: Long,
