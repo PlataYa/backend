@@ -2,7 +2,7 @@ package plataya.app.controller
 
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import plataya.app.model.dtos.CvuValidationResponseDTO
+import plataya.app.model.dtos.wallet.CvuValidationResponseDTO
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.beans.factory.annotation.Autowired
@@ -12,7 +12,7 @@ import plataya.app.exception.WalletNotFoundException
 import plataya.app.model.dtos.AllWalletsDTO
 import plataya.app.model.dtos.BalanceDTO
 import plataya.app.model.dtos.MailDTO
-import plataya.app.model.dtos.WalletDTO
+import plataya.app.model.dtos.wallet.WalletDTO
 import plataya.app.service.WalletService
 
 @RestController

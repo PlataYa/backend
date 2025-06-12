@@ -8,10 +8,10 @@ import org.springframework.http.ResponseEntity
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.ExceptionHandler
 import plataya.app.exception.InvalidCredentialsException
-import plataya.app.model.dtos.LoginRequest
+import plataya.app.model.dtos.user.LoginRequest
 import plataya.app.service.UserService
-import plataya.app.model.dtos.UserDtoResponse
-import plataya.app.model.dtos.UserDtoRequest
+import plataya.app.model.dtos.user.UserDtoResponse
+import plataya.app.model.dtos.user.UserDtoRequest
 
 @RestController
 @RequestMapping("/api/v1/user")

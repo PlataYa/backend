@@ -6,8 +6,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.core.userdetails.User as SpringUser
 import org.springframework.stereotype.Service
-import plataya.app.model.entities.User
-import plataya.app.model.dtos.UserDtoResponse
+import plataya.app.model.entities.user.User
+import plataya.app.model.dtos.user.UserDtoResponse
 import plataya.app.repository.UserRepository
 import plataya.app.repository.WalletRepository
 import plataya.app.authentication.TokenProvider
