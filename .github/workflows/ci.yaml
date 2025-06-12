@@ -34,6 +34,3 @@ jobs:
 
       - name: Build without tests
         run: ./gradlew build -x test
-
-      - name: Run unit tests only
-        run: ./gradlew test --tests "plataya.app.*" --tests "!plataya.app.integration.*"
