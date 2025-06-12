@@ -5,16 +5,13 @@ import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
 import jakarta.annotation.PostConstruct
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.stereotype.Component
 import java.util.Date
 import javax.crypto.SecretKey
-
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Component
 
 @Component
-class TokenProvider(
-    @Value("\${JWT_SECRET_KEY}") private val secret: String
-) {
+class TokenProvider(@Value("\${jwt.secret}") private val secret: String) {
     private lateinit var key: SecretKey
 
     @PostConstruct
@@ -29,24 +26,22 @@ class TokenProvider(
         val now = Date()
         val expiry = Date(now.time + 86_400_000) // 1 día
         return Jwts.builder()
-            .setSubject(email)
-            .claim("userId", userId)
-            .claim("name", name)
-            .claim("lastname", lastname)
-            .setIssuedAt(now)
-            .setExpiration(expiry)
-            .signWith(key, SignatureAlgorithm.HS256)
-            .compact()
+                .setSubject(email)
+                .claim("userId", userId)
+                .claim("name", name)
+                .claim("lastname", lastname)
+                .setIssuedAt(now)
+                .setExpiration(expiry)
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact()
     }
 
-    fun validateTokenAndGetUsername(token: String): String? = try {
-        val claims: Claims = Jwts.parserBuilder()
-            .setSigningKey(key)
-            .build()
-            .parseClaimsJws(token)
-            .body
-        claims.subject
-    } catch (ex: Exception) {
-        null
-    }
+    fun validateTokenAndGetUsername(token: String): String? =
+            try {
+                val claims: Claims =
+                        Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).body
+                claims.subject
+            } catch (ex: Exception) {
+                null
+            }
 }
