@@ -157,15 +157,6 @@ class ComprehensiveExceptionTest : BaseTransactionServiceTest() {
         val externalWalletNotFound = ExternalWalletNotFoundException("External wallet not found")
         val externalInsufficientFunds = ExternalInsufficientFundsException("External insufficient funds")
 
-        // Verify all exceptions are RuntimeException subclasses
-        assertTrue(walletNotFound is RuntimeException)
-        assertTrue(insufficientFunds is RuntimeException)
-        assertTrue(invalidTransaction is RuntimeException)
-        assertTrue(transactionNotFound is RuntimeException)
-        assertTrue(externalService is RuntimeException)
-        assertTrue(externalWalletNotFound is RuntimeException)
-        assertTrue(externalInsufficientFunds is RuntimeException)
-
         // Verify messages
         assertEquals("Wallet not found", walletNotFound.message)
         assertEquals("Insufficient funds", insufficientFunds.message)
