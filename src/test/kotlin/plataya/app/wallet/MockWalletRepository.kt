@@ -7,7 +7,7 @@ import org.springframework.data.domain.Sort
 import org.springframework.data.repository.query.FluentQuery
 import plataya.app.model.entities.wallet.Wallet
 import plataya.app.repository.WalletRepository
-import plataya.app.model.entities.User
+import plataya.app.model.entities.user.User
 import java.util.Optional
 import java.util.function.Function
 

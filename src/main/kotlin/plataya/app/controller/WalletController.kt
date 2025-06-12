@@ -12,7 +12,7 @@ import plataya.app.exception.WalletNotFoundException
 import plataya.app.model.dtos.AllWalletsDTO
 import plataya.app.model.dtos.BalanceDTO
 import plataya.app.model.dtos.MailDTO
-import plataya.app.model.dtos.WalletDTO
+import plataya.app.model.dtos.wallet.WalletDTO
 import plataya.app.service.WalletService
 
 @RestController
