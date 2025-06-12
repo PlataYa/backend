@@ -1,4 +1,4 @@
-package plataya.app.model.entities
+package plataya.app.model.entities.transaction
 
 enum class TransactionStatus {
     PENDING,
