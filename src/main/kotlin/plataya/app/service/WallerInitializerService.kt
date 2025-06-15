@@ -18,7 +18,7 @@ class WallerInitializerService(
         println(">> Inicializando cuentas de prueba...")
 
         val users = listOf(
-            Triple("martina@mail.com", "Martina", 1500.0),
+            Triple("martina@mail.com", "Martina", 1000000.0),
             Triple("elias@mail.com", "Elias", 2500.0),
             Triple("nacho@mail.com", "Nacho", 1000.0),
             Triple("ana@mail.com", "Ana", 300.0)
@@ -35,7 +35,7 @@ class WallerInitializerService(
                 )
                 transactionService.createDeposit(
                     ExternalTransactionDTO(
-                        sourceCvu = "555".toLong(),
+                        sourceCvu = "200000000005".toLong(),
                         destinationCvu = user.cvu!!,
                         amount = balance.toFloat(),
                         currency = Currency.ARS,
