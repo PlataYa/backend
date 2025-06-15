@@ -35,7 +35,7 @@ class WallerInitializerService(
                 )
                 transactionService.createDeposit(
                     ExternalTransactionDTO(
-                        sourceCvu = "555".toLong(),
+                        sourceCvu = "200000000005".toLong(),
                         destinationCvu = user.cvu!!,
                         amount = balance.toFloat(),
                         currency = Currency.ARS,
