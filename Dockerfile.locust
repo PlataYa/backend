@@ -1,0 +1,8 @@
+FROM python:3.11-slim
+
+WORKDIR /locust
+
+COPY requirements-locust.txt requirements-locust.txt
+RUN pip install --no-cache-dir -r requirements-locust.txt
+
+COPY locustfile.py locustfile.py
