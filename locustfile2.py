@@ -411,4 +411,3 @@ class StressWalletUser(HttpUser):
     wait_time = between(0.1, 0.5)  # Tiempo de espera mínimo
     host = "http://localhost:8080"  # Host por defecto
 
-

@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   postgres:
     image: postgres:latest
@@ -10,6 +12,8 @@ services:
       - "${POSTGRES_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - plataya-network
 
   postgres-test:
     image: postgres:latest
@@ -22,7 +26,58 @@ services:
       - "${POSTGRES_PORT_TEST}:5432"
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
+    networks:
+      - plataya-network
+
+  backend:
+    build: .
+    container_name: plataya-backend
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DB: "${POSTGRES_DB}"
+      POSTGRES_PORT: "${POSTGRES_PORT}"
+      POSTGRES_HOST: "${POSTGRES_HOST}"
+      JWT_SECRET_KEY: "${JWT_SECRET_KEY}"
+      EXTERNAL_WALLET_SERVICE_URL: "${EXTERNAL_WALLET_SERVICE_URL}"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - plataya-network
+
+  locust-master:
+    build:
+      context: .
+      dockerfile: Dockerfile.locust
+    container_name: plataya-locust-master
+    ports:
+      - "8089:8089"
+    environment:
+      - LOCUST_MODE=master
+    command: ["locust", "-f", "locustfile.py", "--master", "--host=http://backend:8080"]
+    depends_on:
+      - backend
+    networks:
+      - plataya-network
+
+  locust-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.locust
+    environment:
+      - LOCUST_MODE=worker
+    command: ["locust", "-f", "locustfile.py", "--worker", "--master-host=locust-master"]
+    depends_on:
+      - locust-master
+    networks:
+      - plataya-network
 
 volumes:
   postgres_data:
   postgres_test_data:
+
+networks:
+  plataya-network:
+    driver: bridge
